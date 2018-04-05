@@ -585,7 +585,7 @@ if (seq.length!=0){ #if sequence exists
 								}else{
 									MX5[3,1] <- 0
 								}
-								if(((MX1[i,1]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))){
+								if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))){
 									MX5[3,2] <- 1
 								}else{
 									MX5[3,2] <- 0
@@ -632,7 +632,7 @@ if (seq.length!=0){ #if sequence exists
 									}else{
 										MX5[1,1] <- 0
 									}
-									if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!1))&&((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
+									if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))&&((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,2] <- 1
 									}else{
 										MX5[1,2] <- 0
@@ -648,6 +648,9 @@ if (seq.length!=0){ #if sequence exists
 									}else{
 										MX5[1,2] <- 0
 									}
+								}
+
+								######################################################
 								}else if(i<=ind1){
 									if(((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,1] <- 1
