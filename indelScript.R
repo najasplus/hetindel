@@ -886,17 +886,166 @@ if (seq.length!=0){ #if sequence exists
 									}else{
 										MX5[1,1] <- 0
 									}
-									if(((MX1[2,i]==MX1[2,i+ind1]&& )))
+									if(((MX1[2,i]==MX1[2,i+ind1]&&
+										MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
+									(MX1[2,i]==MX1[2,i-ind2]&&
+										MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
+										MX5[1,2] <- 1
+									}else{
+										MX5[1,2] <- 0
+									}
+								}else if(seq.length - i < ind1){
+									if(ind2 > 0){
+										if(((MX1[2,i] == MX1[1,i - ind1] &&
+											MX3[i - ind1 + 1,ind1,1] >= MX3[i - ind1 + 1,ind1,2])||
+										(MX1[2,i] == MX1[2,i - ind1] &&
+											MX3[i - ind1 + 1,ind1,1] <= MX3[i - ind1 + 1,ind1,2]))){
+											MX5[1,1] <- 1
+										}else{
+											MX5[1,1] <- 0
+										}
+										if(((MX1[1,i] == MX1[1,i - ind1] &&
+											MX3[i - ind1 + 1,ind1,1] >= MX3[i - ind1 + 1,ind1,2]) ||
+										(MX1[1,i] == MX1[2,i - ind1] &&
+											MX3[i - ind1 + 1,ind1,1] <= MX3[i - ind1 + 1,ind1,2]))){
+											MX5[1,2] <- 1
+										}else{
+											MX5[1,2] <- 0
+										}
+									}else{
+										if(((MX1[1,i] == MX1[2,i-ind1] &&
+											MX4[1,i-ind1+1]!=2)||
+										(MX1[1,i] == MX1[1,i-ind1] &&
+											MX4[1,i-ind1+1]!=1))){
+											MX5[1,1] <- 1
+										}else{
+											MX5[1,1] <- 0
+										}
+										if(((MX1[2,i] == MX1[2,i-ind1] &&
+											MX4[1,i-ind1+1]!=2)||
+										(MX1[2,i] == MX1[1,i-ind1] &&
+											MX4[1,i-ind1+1]!=1))){
+											MX5[1,2] <- 1
+										}else{
+											MX5[1,2] <- 0
+										}
+									}
+								}else{
+									if(ind2 > 0){
+										if(((MX1[2,i] == MX1[1,i-ind1] && 
+											MX3[i-ind1+1,ind1,1] >= MX3[i-ind1+1,ind1,2])||
+										(MX1[2,i] == MX1[2,i-ind1]&&
+											MX3[i-ind1+1,ind1,1]<= MX3[i-ind1+1,ind1,2])) &&
+										((MX1[1,i] == MX1[2,i+ind1] &&
+											MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2]) ||
+										(MX1[1,i]==MX1[1,i+ind1]&&
+											MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
+											MX5[1,1] <- 1
+										}else{
+											MX5[1,1] <- 0
+										}
+										if(((MX1[1,i] == MX1[1,i-ind1] && 
+											MX3[i-ind1+1,ind1,1] >= MX3[i-ind1+1,ind1,2])||
+										(MX1[1,i]==MX1[2,i-ind1] && 
+											MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2])) &&
+										((MX1[2,i]==MX1[2,i+ind1] &&
+											MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
+										(MX1[2,i]==MX1[1,i+ind1] &&
+											MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
+											MX5[1,2] <- 1
+										}else{
+											MX5[1,2] <- 0
+										}
+									}else{
+										if(((MX1[1,i] == MX1[2,i-ind1] &&MX4[1,i-ind1+1] !=2) || 
+										(MX1[1,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1] !=1)) &&
+										((MX1[2,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1] != 2) || 
+										(MX1[2,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
+											MX5[1,1] <- 1
+										}else{
+											MX5[1,1] <- 0
+										}
+										if(((MX1[2,i] == MX1[2,i-ind1] && MX4[1,i-ind1+1] !=2) ||
+											(MX1[2,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1]!=1)) &&
+										((MX1[1,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1]!=2)||
+											(MX1[1,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
+											MX5[1,2] <- 1
+										}else{
+											MX5[1,2] <- 0
+										}
+									}
+								}
+								if(MX5[1,1] ==1 &&MX5[1,2] ==0){
+									MX4[1,i+1] <- 1
+									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+								}else if(MX5[1,1] == 0 && MX5[1,2] ==1){
+									MX4[1,i+1] <- 2
+									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+								}
+							}
+						}
+						if(MX4[1,i+1] != 0){
+							j <- 1
+						}
+					}
+				}
+			}
+			if(j!=1){
+					break
+			}
+		}
+	}
+	if(!is.right&&is.align){
+		alignLeft
+		alignRight
+	}else if(is.right&&is.align){
+		alignRight
+		alignLeft
+	}
+
+	#resolve 3-fold degenerate bases
+
+	if(bd){
+		for(i in 1:seq.length){
+			if(any(MX1[1,i] == c("B","D","H","V","N"))){
+				if(i>MX4[2,i+1] && i<=seq.length-MX4[2,i+1]){
+					if(MX4[1,i-MX4[2,i+1]+1]>0 && MX4[1,i+MX4[2,i+1]+1]>0){
+						if(any(MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]] ==c("A","c","G","T"))){
+							if(any(MX1[3-MX4[1,i+MX4[2,i+1]+1],i+MX4[2,i+1]]==c("A","C","G","T"))){
+								if(any(MX1[1,i] ==c("B","D","H","V") & MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]]!=c("A","C","G","T")
+								& MX1[ 3 - MX4[1,i + MX4[2,i+1]+1],i+ MX4[2,i]]!=c("A","C","G","T") &
+								MX1[MX4[1,i - MX4[2,i+1]+1],i - MX4[2,i+1]] !=
+								MX1[ 3 - MX4[1,i + MX4[2,i+1]+1],i + MX4[2,i+1]])){
+									MX1[1,i] <- MX1[3 - MX4[1,i + MX4[2,i+1]+1],i + MX4[2,i+1]]
+									MX1[2,i] <- MX1[MX4[1,i - MX4[2,i+1]+1],i - MX4[2,i+1]]
+								}else if(MX1[1,i]=="N"&&MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]+1]!=
+									MX1[3-MX4[1,i+MX4[2,i+1]+1],i+MX4[2,i+1]]){
+									MX1[1,i] <- MX1[3-MX4[1,i+MX4[2,i+1]+1],i+MX4[2,i+1]]
+									MX1[2,i] <- MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]]
 								}
 							}
 						}
 					}
 				}
 			}
-
 		}
 	}
- 
+
+	#based on MX4 and MX1 reconstruct two allelic sequences
+	temp1 <- c()
+	temp2 <- c()
+	ambig2 <- 0
+	for(i in 1:seq.length){
+		if(MX4[1,i+1]==1){
+			temp1 <- c(temp1,MX1[1,i])
+			temp2 <- c(temp2,MX1[2,i])
+		}else if(MX4[1,i+1] == 2){
+			temp1 <- c(temp1, MX1[2,i])
+			temp2 <- c(temp2, MX1[1,i])
+		}else{
+			ambig2 <- ambig2 +1
+		}
+	}
 
 }
 
