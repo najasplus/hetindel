@@ -1,5 +1,6 @@
 suppressPackageStartupMessages(library(optparse))
 suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(crayon))
 
 #make command line options 
 option_list <- list(
@@ -7,6 +8,8 @@ option_list <- list(
 		    help="file path to sequence data. If set -s is ignored."),
 	make_option(c("-s","--string"), type="character",default=NULL,
 		    help="sequence string"),
+	make_option(c("-n","--number"), type="integer",default=1,help="number of sequence in file. 
+		[default %default"),
 	make_option(c("-m","--max-shift"), type="integer",default=15,
 		help="The maximum potential phase shift size to be considered during analysis; 
 		    can be set up to 1/2 of the length of the analyzed fragment. 
@@ -26,7 +29,7 @@ option_list <- list(
 		help="Display gaps aligned to the left."),
 	make_option(c("-a","--align"),action="store_true",default=TRUE, 
 		help="Option for displaying reconstructed allelic sequences. [default]"),
-	make_option(c("-n","--not-align"),action="store_false",dest="align",
+	make_option(c("-A","--not-align"),action="store_false",dest="align",
 		help="Option for not displaying reconstructed allelic sequences."),
 	make_option(c("-g","--long-indel"),action="store_true",default=FALSE,
 		help="Display alternative, longer variants of reconstructed insertions.
@@ -35,8 +38,63 @@ option_list <- list(
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
 
+countCharOccurrences <- function(char, s) {
+    s2 <- gsub(char,"",s)
+    return (nchar(s) - nchar(s2))
+}
 
 
+
+alignLeft <- function(matrix,seq.length,seq.matrix){
+	z1 <- 0
+	for(i in seq.length:1){
+		matrix[4,i] <- 0
+	}if((seq.length - i - matrix[2,i]) >0){
+		j <- matrix[2,i+1]
+		x <- matrix[2,i]
+		if(x<j){
+			matrix[4,i] <- 1
+			if(any(matrix[1,i]==c(0,1))&&any(matrix[1,i+j]==c(0,1))&&
+				seq.matrix[1,i]==seq.matrix[2,i+j]){
+				matrix[2,i] <- j
+			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(2,0))&&
+				seq.matrix[2,i]==seq.matrix[1,i+j]){
+				matrix[2,i] <- j
+			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(1,0))&&
+				seq.matrix[2,i]==seq.matrix[2,i+j]){
+				matrix[2,i] <- j
+			}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
+				seq.matrix[1,i]==seq.matrix[1,i+j]){
+				matrix[2,i] <- j
+			}else{
+				matrix[4,i] <- 0
+			}
+		}else if(x>0&&j<0){
+			matrix[4,i] <- 1
+			if(i<j){
+				matrix[4,i] <- 0
+			}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i-j]==c(1,0))&&
+				seq.matrix[1,i-j]==seq.matrix[2,i]){
+				matrix[2,i] <- j
+			}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i-j]==c(2,0))&&
+				seq.matrix[2,i-j]==seq.matrix[2,i]){
+				matrix[2,i] <- j
+			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i-j]==c(1,0))&&
+				seq.matrix[1,i-j]==seq.matrix[1,i]){
+				matrix[2,i] <- j
+			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i-j]==c(2,0))&&
+				seq.matrix[2,i.j]==seq.matrix[1,i]){
+				matrix[2,i] <-j
+			}else{
+				matrix[4,i] <- 0
+			}
+		}else if( x>j){
+			matrix[4,i] <- 1
+			if()
+		}
+	}
+}
+alignRight <- function(x){}
 
 
 #print(opt$input)
@@ -52,15 +110,97 @@ opt = parse_args(opt_parser)
 #print(opt$long)
 
 
+seq.number <- opt$number
+
 #check if input or string is set
 if(!is.null(opt$input)){
-	sequence <- trimws(read_file(opt$input))
+	#parse input file
+	sequence <- trimws(readLines(opt$input))
+
+	#get combined sequence
+	sequence <- sequence[grep("Combined",sequence)+1]
+
+	if(length(sequence)<seq.number){
+		print_help(opt_parser)
+		stop("File does not contain ",seq.number," sequences, but only ",
+		length(sequence),".",call.=FALSE)
+	}else{
+		sequence <- sequence[seq.number]
+	}
 }else if (!is.null(opt$string)){
 	sequence <- opt$string
 }else{
 	print_help(opt_parser)
 	stop("Please provide an input file or string.\n",call.=FALSE)
 }	
+
+
+
+
+
+seq.toMatrix <- function(sequence,max.shift){
+
+	#convert sequence to all uppercase
+	sequence <- toupper(sequence)
+
+	seq.asvector=strsplit(sequence,"")[[1]]
+	
+	#set sequence length
+	seq.length <- nchar(sequence)
+	
+	#maximum shift is limited to half of sequence length
+	if(max.shift*2>seq.length){
+		max.shift=floor(nchar(sequence)/2)
+	}
+
+	#initialize matric MX1
+	seq.matrix <- matrix(,nrow=2,ncol=seq.length)
+
+
+	if (seq.length!=0){ #if sequence exists
+	
+
+	#set scores as in indelligent
+	match.score=1
+	mismatch.score=0
+	
+
+	pos.of=seq.asvector=="R"
+	seq.matrix[1,pos.of]="A"
+	seq.matrix[2,pos.of]="G"
+	pos.of=seq.asvector=="Y"
+	seq.matrix[1,pos.of]="C"
+	seq.matrix[2,pos.of]="T"
+	pos.of=seq.asvector=="S"
+	seq.matrix[1,pos.of]="G"
+	seq.matrix[2,pos.of]="C"
+	pos.of=seq.asvector=="W"
+	seq.matrix[1,pos.of]="A"
+	seq.matrix[2,pos.of]="T"
+	pos.of=seq.asvector=="M"
+	seq.matrix[1,pos.of]="A"
+	seq.matrix[2,pos.of]="C"
+	pos.of=seq.asvector=="K"
+	seq.matrix[1,pos.of]="G"
+	seq.matrix[2,pos.of]="T"
+	#fill remaining characters
+	pos.of=is.na(seq.matrix[1,])
+	seq.matrix[1,pos.of]=seq.asvector[pos.of]
+	seq.matrix[2,pos.of]=seq.asvector[pos.of]
+	#check for 3-fold degenerate bases
+	if (!(seq.matrix=="A" || seq.matrix=="T" || seq.matrix=="G" || seq.matrix=="C")){
+		bd <- TRUE
+		ambig1 <- sum(!(seq.matrix=="A" | seq.matrix=="T" | seq.matrix=="G" | seq.matrix=="C"))
+	}else{
+		bd <- FALSE
+	}
+
+
+	
+
+	return(list(matrix=seq.matrix,three.fold=bd,ambig=ambig1))
+}}
+
 
 
 #convert sequence to all uppercase
@@ -83,7 +223,6 @@ seq.length <- nchar(sequence)
 if(max.shift*2>seq.length){
 	max.shift=floor(nchar(sequence)/2)
 }
-
 if (seq.length!=0){ #if sequence exists
 	
 
@@ -124,7 +263,10 @@ if (seq.length!=0){ #if sequence exists
 	}else{
 		bd <- FALSE
 	}
-#	print(MX1)
+
+
+	
+	print(MX1)
 	#init calculation matrices
 	MX2 <- array(0,dim=c(seq.length+2,max.shift+1,2))
 	MX3 <- array(0,dim=c(seq.length+2,max.shift+1,2))
@@ -329,8 +471,10 @@ if (seq.length!=0){ #if sequence exists
 
 	#resolve the remaining ambiguities.
 	#MX5 is used to determine the possibility of resolving an ambiguous position with the 
-	#same phase shift as the preceding positions or eith the same shift as the folowing positions
+	#same phase shift as the preceding positions or with the same shift as the following positions
 	MX5 <- matrix(,nrow=2,ncol=4)
+
+	#mark and rotate positions for long indels 
 	if (is.longindel){
 		SCa = MX4[2,2]
 		for(i in 1:seq.length){
@@ -382,8 +526,8 @@ if (seq.length!=0){ #if sequence exists
 	
 	if(SCc==1){
 		repeat{
-			alignLeft()
-			alignRight()
+			alignLeft(1)
+			alignRight(1)
 
 			#calculate and mark the ambiguities that could potentially be resolved
 
@@ -399,8 +543,7 @@ if (seq.length!=0){ #if sequence exists
 						MX4[3,i+1] <- 0
 					}else if(MX4[3,i-j+1]==1 && abs(MX4[2,i-j+1])==j && MX4[1,i-j+1]==0){
 						MX4[3,i+1] <- 1
-					}else
-					{
+					}else{
 						SCc <- 1
 						while(MX4[1,j*SCc+i+1]==0 && abs(MX4[2,j*SCc+1+i])==j && 
 							j*SCc+i+1<=seq.length){
@@ -514,144 +657,237 @@ if (seq.length!=0){ #if sequence exists
 								}else{
 									MX5[2,2] <- 0
 								}
-								if((ind1 < ins2) &&((MX1[2,i]==MX1[1,i-ind2]&&MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||(MX1[2,i]==MX1[2,i-ind1]&&MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))&&((MX1[1,i]==MX1[2,i+ind2]&&MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||(MX1[1,i]==MX1[1,i+ind2]&&MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
+								if((ind1 < ins2) &&
+									((MX1[2,i]==MX1[1,i-ind2]&&
+										MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||
+									(MX1[2,i]==MX1[2,i-ind1]&&
+										MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))&&
+									((MX1[1,i]==MX1[2,i+ind2]&&
+										MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||
+									(MX1[1,i]==MX1[1,i+ind2]&&
+										MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
 									MX5[4,1] <- 1
 								}else{
 									MX5[4,1] <- 0
 								}
-								if((ind1<ind2)&&((MX1[1,i]==MX1[1,i-ind]&&MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||(MX1[1,i]==MX1[2,i-ind1]&&MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))&&((MX1[2,i]==MX1[2,i+ind2]&&MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||(MX1[2,i]==MX1[1,i+ind2]&&MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
+								if((ind1<ind2)&&
+									((MX1[1,i]==MX1[1,i-ind]&&
+										MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||
+									(MX1[1,i]==MX1[2,i-ind1]&&
+										MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))&&
+									((MX1[2,i]==MX1[2,i+ind2]&&
+										MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||
+									(MX1[2,i]==MX1[1,i+ind2]&&
+										MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
 									MX5[4,2] <- 1
 								}else{
 									MX5[4,1] <- 0
 								}
 							}else if(i<=ind1){
-								if(((MX1[1,i]==MX1[2,i+ind1]&&MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2])||(MX1[1,i]==MX1[1,i+ind1]&&MX3[i+ind1+1,ind1,1]<=MX3[i+ind1+1,ind1,2]))){
+								if(((MX1[1,i]==MX1[2,i+ind1]&&
+									MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2])||
+								(MX1[1,i]==MX1[1,i+ind1]&&
+									MX3[i+ind1+1,ind1,1]<=MX3[i+ind1+1,ind1,2]))){
 									MX5[1,1] <- 1
 								}else{
 									MX5[1,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i+ind1]&&MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2])||(MX1[2,i]==MX1[1,i+ind1]&&MX3[i+ind1+1,ind1,1]<=MX3[i+ind1+1,ind1,2]))){
+								if(((MX1[2,i]==MX1[2,i+ind1]&&
+									MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2])||
+								(MX1[2,i]==MX1[1,i+ind1]&&
+									MX3[i+ind1+1,ind1,1]<=MX3[i+ind1+1,ind1,2]))){
 									MX5[1,2] <- 1
 								}else{
 									MX5[1,2] <- 0
 								}
-								MX5[2,1] <- 0
-								MX5[2,2] <- 0
+								MX5[2,] <- 0
 							}else if(seq.length-i< ind2){
-								MX5[1,1] <- 0
-								MX5[1,2] <- 0
-								if(((MX1[2,i]==MX1[1,i-ind2]&&MX3[i-ind2+1,ind2,1]>=MX3[i-ind2+1,ind2,2])||(MX1[2,i]==MX1[2,i-ind2]&&MX3[i-ind2+1,ind2,1]<=MX3[i.ind2+1,ind2,2]))){
+								MX5[1,] <- 0
+								if(((MX1[2,i]==MX1[1,i-ind2]&&
+									MX3[i-ind2+1,ind2,1]>=MX3[i-ind2+1,ind2,2])||
+								(MX1[2,i]==MX1[2,i-ind2]&&
+									MX3[i-ind2+1,ind2,1]<=MX3[i.ind2+1,ind2,2]))){
 									MX5[2,1] <- 1
 								}else{
 									MX5[2,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i-ind2]&&MX3[i-ind2+1,ind2,1]>=MX3[i-ind2+1,ind2,2])||(MX1[1,i]==MX1[2,i-ind2]&&MX3[i-ind2+1,ind2,1]<=MX3[i-ind2+1,ind2,2]))){
+								if(((MX1[1,i]==MX1[1,i-ind2]&&
+									MX3[i-ind2+1,ind2,1]>=MX3[i-ind2+1,ind2,2])||
+								(MX1[1,i]==MX1[2,i-ind2]&&
+									MX3[i-ind2+1,ind2,1]<=MX3[i-ind2+1,ind2,2]))){
 									MX5[2,2] <- 1
 								}else{
 									MX5[2,2] <- 0
 								}
 							}
 							if(MX4[2,i-z+1]<MX4[2,i+z+1]||i<=ind1){
-								if(((MX1[1,i]==MX1[2,i+ind2]&&MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||(MX1[1,i]==MX1[1,i+ind2]&&MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
+								if(((MX1[1,i]==MX1[2,i+ind2]&&
+									MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||
+								(MX1[1,i]==MX1[1,i+ind2]&&
+									MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
 									MX5[3,1] <- 1
 								}else{
 									MX5[3,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[1,i+ind2]&&MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||(MX1[2,i]==MX1[1,i+ind2]&&MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
+								if(((MX1[2,i]==MX1[1,i+ind2]&&
+									MX3[i+ind2+1,ind2,1]>=MX3[i+ind2+1,ind2,2])||
+								(MX1[2,i]==MX1[1,i+ind2]&&
+									MX3[i+ind2+1,ind2,1]<=MX3[i+ind2+1,ind2,2]))){
 									MX5[3,2] <- 1
 								}else{
 									MX5[3,2] <- 0
 								}
 							}else{
-								if(((MX1[2,i]==MX1[1,i-ind1]&&MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||(MX1[2,i]==MX1[2,i-ind1]&&MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))){
+								if(((MX1[2,i]==MX1[1,i-ind1]&&
+									MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||
+								(MX1[2,i]==MX1[2,i-ind1]&&
+									MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))){
 									MX5[3,1] <- 1
 								}else{
 									MX5[3,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i-ind1]&&MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||(MX1[2,i]==MX1[2,i-ind1]&&MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))){
+								if(((MX1[1,i]==MX1[1,i-ind1]&&
+									MX3[i-ind1+1,ind1,1]>=MX3[i-ind1+1,ind1,2])||
+								(MX1[2,i]==MX1[2,i-ind1]&&
+									MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2]))){
 									MX5[3,2] <- 1
 								}else{
 									MX5[3,2] <- 0
 								}
 							}
 							if(ind1==0||ind2==0){
-								MX5[4,1] <- 0
-								MX5[4,2] <- 0
+								MX5[4,] <- 0
 							}	
-						}else{
+						}else{  #long indel
 							if(MX4[2,i-z+1]>0){
-								if(((MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1] !=2)||(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind1+1]!=1))){
+								if(((MX1[2,i]==MX1[1,i-ind1]&&
+									MX4[1,i-ind1+1] !=2)||
+								(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind1+1]!=1))){
 									MX5[3,1] <- 1
 								}else{
 									MX5[3,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))){
+								if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||
+									(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))){
 									MX5[3,2] <- 1
 								}else{
 									MX5[3,2] <- 0
 								}
 							}else{
-								if(((MX1[1,i]==MX1[2,i-ind1] && MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))){
+								if(((MX1[1,i]==MX1[2,i-ind1] && MX4[1,i-ind1+1]!=2)||
+									(MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))){
 									MX5[4,1] <- 1
 								}else{
 									MX5[4,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))){
+								if(((MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=2)||
+									(MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))){
 									MX5[4,2] <- 1
 								}else{
 									MX5[4,2] <- 0
 								}
 							}
 							if(MX4[2,i+z+1]>0){
-								if(((MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||(MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+2]!=1))){
+								if(((MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+									(MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+2]!=1))){
 									MX5[4,1] <- 1
 								}else{
 									MX5[4,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||(MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+								if(((MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+									(MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
 									MX5[4,2] <- 1
 								}else{
 									MX5[4,2] <- 0
 								}
 							}else{
-								if(((MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||(MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+								if(((MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+									(MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
 									MX5[4,1] <- 1
 								}else{
 									MX5[4,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||(MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+								if(((MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+									(MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
 									MX5[4,2] <- 1
 								}else{
 									MX5[4,2] <- 0
 								}
 							}
-							if(i >= ind1 && i>= ind2 && (seq.length-i)>ind1&&(seq.length-i)<ind2){
+							if(i >= ind1 && i>= ind2 && (seq.length-i)>ind1&&
+								(seq.length-i)<ind2){
 								if(MX4[2,i-z+1]>0){
-									if(((MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=1))&&((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
+									if(((MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||
+										(MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=1))&&
+									((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||
+										(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,1] <- 1
 									}else{
 										MX5[1,1] <- 0
 									}
-									if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))&&((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
+									if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||
+										(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))&&
+									((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||
+										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,2] <- 1
 									}else{
 										MX5[1,2] <- 0
 									}
 								}else{
-									if(((MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=2)||(MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))&&((MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
+									if(((MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=2)||
+										(MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))&&
+									((MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=2)||
+										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,1] <- 1
 									}else{
 										MX5[1,1] <- 0
 									}
-									if(((MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=2)||(MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))&&((MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1]!=2)||(MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=1))){
+									if(((MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=2)||
+										(MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))&&
+									((MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1]!=2)||
+										(MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,2] <- 1
 									}else{
 										MX5[1,2] <- 0
 									}
 								}
-
+								if(MX4[2,i+z+1]>0){
+									if(((MX1[2,i]==MX1[1,i-ind2]&&MX4[1,i-ind2+1]!=2)||
+										(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=1))&&
+									((MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+										(MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+										MX5[2,1] <- 1
+									}else{
+										MX5[2,1] <- 0
+									}
+									if(((MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind2+1]!=2)||
+										(MX1[1,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=1))&&
+									((MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+										(MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+										MX5[2,2] <- 1
+									}else{
+										MX5[2,2] <- 0
+									}
+								}else{
+									if(((MX1[1,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=2)||
+										(MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind2+1]!=1))&&
+									((MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2]!=2)||
+										(MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+										MX5[2,1] <- 1
+									}else{
+										MX5[2,1] <- 0
+									}
+									if(((MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=2)||
+										(MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind2]!=1))&&
+									((MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||
+										(MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
+										MX5[2,2] <- 1
+									}else{
+										MX5[2,2] <- 0
+									}
+								}
 								######################################################
-								}else if(i<=ind1){
+							}else if(i<=ind1){
 									if(((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,1] <- 1
 									}else{
@@ -663,7 +899,7 @@ if (seq.length!=0){ #if sequence exists
 										MX5[1,2] <- 0
 									}
 									MX5[2,] <- 0
-								}else if((seq.length-i)<ind2){
+							}else if((seq.length-i)<ind2){
 									MX5[1,] <- 0
 									if(((MX1[2,i]==MX1[1,i-ind2]&&MX4[1,i-ind1]!=2)||(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind1]!=1))){
 										MX5[2,1] <- 1
@@ -675,335 +911,337 @@ if (seq.length!=0){ #if sequence exists
 									}else{
 										MX5[2,2] <- 0
 									}
-								}
 							}
+						}
 
-							if(ind1==0){
-								MX5[1,] <- 0
-							}
-							if(ind2==0){
-								MX5[2,] <- 0
-							}
-
-							if(!is.longindel){
-								if(ind1>ind2){
-									if(MX4[2,i]==ind1){
-										if(z<=ind1){
-											MX5[1,] <- 0
-											if(z<=ind2){
-												MX5[3,] <- 0
-											}
-										}
-
-										if((MX4[4,i+1]-z)<0){
-											MX5[2,] <- 0
-										}
-									}else{
+						if(ind1==0){
+							MX5[1,] <- 0
+						}
+						if(ind2==0){
+							MX5[2,] <- 0
+						}
+#############################################################################################
+						if(!is.longindel){
+							if(ind1>ind2){
+								if(MX4[2,i]==ind1){
+									if(z<=ind1){
 										MX5[1,] <- 0
-										MX5[3,] <- 0
+										if(z<=ind2){
+											MX5[3,] <- 0
+										}
 									}
-								}else{ #ind1<ind2
-									if(MX4[2,i+1]==ind1){
-										if(MX4[3,i+1]<=ind2){
-											MX5[2,] <- 0
-											if(ind1 != 0 && z > MX4[4,i+1]){
-												MX5[3,] <- 0
-											}
-										}
-										if(z>ind2){
-											MX5[2,] <- 0
-										}
-									}else{
-										if(z+MX4[4,i+1]<=ind2){
-											MX5[2,] <- 0
-										}
-										if(z>ind1){
-											MX5[4,] <- 0
-										}
-										MX5[1,] <- 0
-									}
-								}
-							}else{
-								if(ind1>ind2){
-									if(abs(MX4[2,i+1])==ind1){
-										if(z<=ind1){
-											MX5[1,] <- 0
-										}
-										if((MX4[4,i+1]-z)<0){
-											MX5[c(2,4),] <- 0
-										}
-									}else{
-										MX5[c(1,3),] <- 0
+
+									if((MX4[4,i+1]-z)<0){
+										MX5[2,] <- 0
 									}
 								}else{
-									if(MX4[2,i+1] <0 ind2){
-										if(MX4[4,i+1]<=ind2){
-											MX5[2,] <- 0
-										}
-										if(ind1!=0 &&z > MX4[4,i+1]){
-											MX5[4,] <- 0
-										}
-										if(z>ind2){
-											MX5[2,] <- 0
-										}
-									}else{
-										if((z+MX4[4,i+1])<=ind2){
-											MX5[2,] <- 0
-										}
-										MX5[c(1,3),] <- 0
-									}
+									MX5[1,] <- 0
+									MX5[3,] <- 0
 								}
-							}
-							if(!is.longindel){
-								if(all(MX5[1,]==1)){
-								}else if(all(MX5[2,]==1)){
-								}else if(all(MX5[c(1,2),1]==1)&&all(MX5[c(1,2),2]==0)){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(all(MX5[c(1,2),1]==0)&&all(MX5[c(1,2),2]==1)){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
-								}else if((MX5[1,1]==1&&MX5[2,2]==1)||(MX5[1,2]==1&&MX5[2,1]==1)){
-								}else if(all(MX5[c(1,3),1]==1)&&all(MX5[c(1,3),2]==0)){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(all(MX5[c(1,3),1]==0)&&all(MX5[c(1,3),2]==1))){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
-								}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))
-									&&z< ind1 &&MX4[4,i+1]>ind1{
-								}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
-									&&z<=ind1 &&MX4[4,i+1]>ind2 &&ind2 >ind1){
-								}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
-									&&MX4[2,i+1]==ind2&&MX4[1,i+ind2+1]==0){
-								}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
-									&&MX4[2,i+1]==ind1&&MX4[4,i+1]>=z){
-								}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))
-									&&MX4[2,i+1]==ind1&&ind2>ind1&&MX4[4,i+1]>=(z+ind1)){
-								}else if(xor(MX5[1,1]==1,MX5[1,2]==1){
-									if(MX5[1,1]==1){
-										MX4[1,i+1] <- 1
-										MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-									}else{
-										MX4[1,i+1] <- 2
-										MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}else{ #ind1<ind2
+								if(MX4[2,i+1]==ind1){
+									if(MX4[3,i+1]<=ind2){
+										MX5[2,] <- 0
+										if(ind1 != 0 && z > MX4[4,i+1]){
+											MX5[3,] <- 0
+										}
 									}
-								}else if(xor(MX5[2,1]==1,MX5[2,2]==1)){
-									if(MX5[2,1]==1){
-										MX4[1,i+1] <- 1
-										MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-									}else{
-										MX4[1,i+1] <- 2
-										MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+									if(z>ind2){
+										MX5[2,] <- 0
 									}
-								}else if(all(MX5[3,]==1)&&all(MX5[4,]==0)){
-								}else if(all(MX5[3,]==1)&&all(MX5[4,]==c(1,0))){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(all(MX5[3,]==1)&&all(MX5[4,]==c(0,1))){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
-								}else if(MX5[3,1]==1){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(MX5[3,2]==1){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
-								}
-							}else{
-
-								if(all(MX5[1,]==1)){
-								}else if(all(MX5[2,]==1)){
-								}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))){
-								}else if(((MX5[2,1]==1&&MX5[4,2]==1)||(MX5[2,2]==1&&MX5[4,1]==1))){
-								}else if(((MX5[1,1]==1&&MX5[4,2]==1)||(MX5[1,2]==1&&MX5[4,1]==1))){
-								}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))){
-								}else if(((MX5[4,1]==1&&MX5[3,2]==1)||(MX5[4,2]==1&&MX5[3,1]==1))){
-								}else if(xor(MX5[1,1]==1,MX5[1,2]==1)){
-									if(MX5[1,1]==1){
-										MX4[1,i+1] <- 1
-										MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-									}else{
-										MX4[1,i+1] <- 2
-										MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+								}else{
+									if(z+MX4[4,i+1]<=ind2){
+										MX5[2,] <- 0
 									}
-								}else if(xor(MX5[2,1]==1,MX5[2,2]==1)){
-									if(MX5[2,1]==1){
-										MX4[1,i+1] <- 1
-										MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-									}else{
-										MX4[1,i+1] <- 2
-										MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-										MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+									if(z>ind1){
+										MX5[4,] <- 0
 									}
-								}else if(all(MX5[3,]==1)){
-								}else if(all(MX5[4,]==1)){
-								}else if(all(MX5[4,]==c(1,0))){
-									X4[1,i+1] <- 1
-									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(all(MX5[4,]==c(0,1))){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
-								}else if(all(MX5[3,]==c(1,0))){
-									X4[1,i+1] <- 1
-									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(all(MX5[3,]==c(0,1))){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+									MX5[1,] <- 0
 								}
 							}
 						}else{
-							if(MX4[2,i]==MX4[2,i+2]||i==1||i==seq.length){
-								if(i!=seq.length){
-									ind1 <- abs(MX4[2,i+2])
-									ind2 <- MX4[2,i+2]
+							if(ind1>ind2){
+								if(abs(MX4[2,i+1])==ind1){
+									if(z<=ind1){
+										MX5[1,] <- 0
+									}
+									if((MX4[4,i+1]-z)<0){
+										MX5[c(2,4),] <- 0
+									}
 								}else{
-									ind1 <- abs(MX4[2,i])
-									ind2 <- MX4[2,i]
+									MX5[c(1,3),] <- 0
 								}
-								if(i<=ind1){
-									if(((MX1[1,i]==MX1[2,i+ind1]&&
-										MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
+							}else{
+								if(MX4[2,i+1] <= ind2){
+									if(MX4[4,i+1]<=ind2){
+										MX5[2,] <- 0
+									}
+									if(ind1!=0 &&z > MX4[4,i+1]){
+										MX5[4,] <- 0
+									}
+									if(z>ind2){
+										MX5[2,] <- 0
+									}
+								}else{
+									if((z+MX4[4,i+1])<=ind2){
+										MX5[2,] <- 0
+									}
+									MX5[c(1,3),] <- 0
+								}
+							}
+						}
+						if(!is.longindel){
+							if(all(MX5[1,]==1)){
+							}else if(all(MX5[2,]==1)){
+							}else if(all(MX5[c(1,2),1]==1)&&all(MX5[c(1,2),2]==0)){
+								MX4[1,i+1] <- 1
+								MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(all(MX5[c(1,2),1]==0)&&all(MX5[c(1,2),2]==1)){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}else if((MX5[1,1]==1&&MX5[2,2]==1)||(MX5[1,2]==1&&MX5[2,1]==1)){
+							}else if(all(MX5[c(1,3),1]==1)&&all(MX5[c(1,3),2]==0)){
+								MX4[1,i+1] <- 1
+								MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(all(MX5[c(1,3),1]==0)&&all(MX5[c(1,3),2]==1)){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))
+								&&z< ind1 &&MX4[4,i+1]>ind1){
+							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
+								&&z<=ind1 &&MX4[4,i+1]>ind2 &&ind2 >ind1){
+							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
+								&&MX4[2,i+1]==ind2&&MX4[1,i+ind2+1]==0){
+							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
+								&&MX4[2,i+1]==ind1&&MX4[4,i+1]>=z){
+							}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))
+								&&MX4[2,i+1]==ind1&&ind2>ind1&&MX4[4,i+1]>=(z+ind1)){
+							}else if(xor(MX5[1,1]==1,MX5[1,2]==1)){
+								if(MX5[1,1]==1){
+									MX4[1,i+1] <- 1
+									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+								}else{
+									MX4[1,i+1] <- 2
+									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+								}
+							}else if(xor(MX5[2,1]==1,MX5[2,2]==1)){
+								if(MX5[2,1]==1){
+									MX4[1,i+1] <- 1
+									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+								}else{
+									MX4[1,i+1] <- 2
+									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+								}
+							}else if(all(MX5[3,]==1)&&all(MX5[4,]==0)){
+							}else if(all(MX5[3,]==1)&&all(MX5[4,]==c(1,0))){
+								MX4[1,i+1] <- 1
+								MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(all(MX5[3,]==1)&&all(MX5[4,]==c(0,1))){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}else if(MX5[3,1]==1){
+								MX4[1,i+1] <- 1
+								MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(MX5[3,2]==1){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}
+						}else{
+
+							if(all(MX5[1,]==1)){
+							}else if(all(MX5[2,]==1)){
+							}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))){
+							}else if(((MX5[2,1]==1&&MX5[4,2]==1)||(MX5[2,2]==1&&MX5[4,1]==1))){
+							}else if(((MX5[1,1]==1&&MX5[4,2]==1)||(MX5[1,2]==1&&MX5[4,1]==1))){
+							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))){
+							}else if(((MX5[4,1]==1&&MX5[3,2]==1)||(MX5[4,2]==1&&MX5[3,1]==1))){
+							}else if(xor(MX5[1,1]==1,MX5[1,2]==1)){
+								if(MX5[1,1]==1){
+									MX4[1,i+1] <- 1
+									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+								}else{
+									MX4[1,i+1] <- 2
+									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+								}
+							}else if(xor(MX5[2,1]==1,MX5[2,2]==1)){
+								if(MX5[2,1]==1){
+									MX4[1,i+1] <- 1
+									MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+								}else{
+									MX4[1,i+1] <- 2
+									MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+								}
+							}else if(all(MX5[3,]==1)){
+							}else if(all(MX5[4,]==1)){
+							}else if(all(MX5[4,]==c(1,0))){
+								X4[1,i+1] <- 1
+								MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(all(MX5[4,]==c(0,1))){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}else if(all(MX5[3,]==c(1,0))){
+								X4[1,i+1] <- 1
+								MX3[i+1,ind2,1] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(all(MX5[3,]==c(0,1))){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind2,2] <- max(MX3[i+1,ind2,])+1 
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}
+						}
+					}else{
+						if(MX4[2,i]==MX4[2,i+2]||i==1||i==seq.length){
+							if(i!=seq.length){
+								ind1 <- abs(MX4[2,i+2])
+								ind2 <- MX4[2,i+2]
+							}else{
+								ind1 <- abs(MX4[2,i])
+								ind2 <- MX4[2,i]
+							}
+							if(i<=ind1){
+								if(((MX1[1,i]==MX1[2,i+ind1]&&
+									MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
+								(MX1[1,i]==MX1[1,i+ind1]&&
+									MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
+									MX5[1,1] <- 1
+								}else{
+									MX5[1,1] <- 0
+								}
+								if(((MX1[2,i]==MX1[2,i+ind1]&&
+									MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
+								(MX1[2,i]==MX1[2,i-ind2]&&
+									MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
+									MX5[1,2] <- 1
+								}else{
+									MX5[1,2] <- 0
+								}
+							}else if(seq.length - i < ind1){
+								if(ind2 > 0){
+									if(((MX1[2,i] == MX1[1,i - ind1] &&
+										MX3[i - ind1 + 1,ind1,1] >= MX3[i - ind1 + 1,ind1,2])||
+									(MX1[2,i] == MX1[2,i - ind1] &&
+										MX3[i - ind1 + 1,ind1,1] <= MX3[i - ind1 + 1,ind1,2]))){
+										MX5[1,1] <- 1
+									}else{
+										MX5[1,1] <- 0
+									}
+									if(((MX1[1,i] == MX1[1,i - ind1] &&
+										MX3[i - ind1 + 1,ind1,1] >= MX3[i - ind1 + 1,ind1,2]) ||
+									(MX1[1,i] == MX1[2,i - ind1] &&
+										MX3[i - ind1 + 1,ind1,1] <= MX3[i - ind1 + 1,ind1,2]))){
+										MX5[1,2] <- 1
+									}else{
+										MX5[1,2] <- 0
+									}
+								}else{
+									if(((MX1[1,i] == MX1[2,i-ind1] &&
+										MX4[1,i-ind1+1]!=2)||
+									(MX1[1,i] == MX1[1,i-ind1] &&
+										MX4[1,i-ind1+1]!=1))){
+										MX5[1,1] <- 1
+									}else{
+										MX5[1,1] <- 0
+									}
+									if(((MX1[2,i] == MX1[2,i-ind1] &&
+										MX4[1,i-ind1+1]!=2)||
+									(MX1[2,i] == MX1[1,i-ind1] &&
+										MX4[1,i-ind1+1]!=1))){
+										MX5[1,2] <- 1
+									}else{
+										MX5[1,2] <- 0
+									}
+								}
+							}else{
+								if(ind2 > 0){
+									if(((MX1[2,i] == MX1[1,i-ind1] && 
+										MX3[i-ind1+1,ind1,1] >= MX3[i-ind1+1,ind1,2])||
+									(MX1[2,i] == MX1[2,i-ind1]&&
+										MX3[i-ind1+1,ind1,1]<= MX3[i-ind1+1,ind1,2])) &&
+									((MX1[1,i] == MX1[2,i+ind1] &&
+										MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2]) ||
 									(MX1[1,i]==MX1[1,i+ind1]&&
 										MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
 										MX5[1,1] <- 1
 									}else{
 										MX5[1,1] <- 0
 									}
-									if(((MX1[2,i]==MX1[2,i+ind1]&&
+									if(((MX1[1,i] == MX1[1,i-ind1] && 
+										MX3[i-ind1+1,ind1,1] >= MX3[i-ind1+1,ind1,2])||
+									(MX1[1,i]==MX1[2,i-ind1] && 
+										MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2])) &&
+									((MX1[2,i]==MX1[2,i+ind1] &&
 										MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
-									(MX1[2,i]==MX1[2,i-ind2]&&
+									(MX1[2,i]==MX1[1,i+ind1] &&
 										MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
 										MX5[1,2] <- 1
 									}else{
 										MX5[1,2] <- 0
 									}
-								}else if(seq.length - i < ind1){
-									if(ind2 > 0){
-										if(((MX1[2,i] == MX1[1,i - ind1] &&
-											MX3[i - ind1 + 1,ind1,1] >= MX3[i - ind1 + 1,ind1,2])||
-										(MX1[2,i] == MX1[2,i - ind1] &&
-											MX3[i - ind1 + 1,ind1,1] <= MX3[i - ind1 + 1,ind1,2]))){
-											MX5[1,1] <- 1
-										}else{
-											MX5[1,1] <- 0
-										}
-										if(((MX1[1,i] == MX1[1,i - ind1] &&
-											MX3[i - ind1 + 1,ind1,1] >= MX3[i - ind1 + 1,ind1,2]) ||
-										(MX1[1,i] == MX1[2,i - ind1] &&
-											MX3[i - ind1 + 1,ind1,1] <= MX3[i - ind1 + 1,ind1,2]))){
-											MX5[1,2] <- 1
-										}else{
-											MX5[1,2] <- 0
-										}
-									}else{
-										if(((MX1[1,i] == MX1[2,i-ind1] &&
-											MX4[1,i-ind1+1]!=2)||
-										(MX1[1,i] == MX1[1,i-ind1] &&
-											MX4[1,i-ind1+1]!=1))){
-											MX5[1,1] <- 1
-										}else{
-											MX5[1,1] <- 0
-										}
-										if(((MX1[2,i] == MX1[2,i-ind1] &&
-											MX4[1,i-ind1+1]!=2)||
-										(MX1[2,i] == MX1[1,i-ind1] &&
-											MX4[1,i-ind1+1]!=1))){
-											MX5[1,2] <- 1
-										}else{
-											MX5[1,2] <- 0
-										}
-									}
 								}else{
-									if(ind2 > 0){
-										if(((MX1[2,i] == MX1[1,i-ind1] && 
-											MX3[i-ind1+1,ind1,1] >= MX3[i-ind1+1,ind1,2])||
-										(MX1[2,i] == MX1[2,i-ind1]&&
-											MX3[i-ind1+1,ind1,1]<= MX3[i-ind1+1,ind1,2])) &&
-										((MX1[1,i] == MX1[2,i+ind1] &&
-											MX3[i+ind1+1,ind1,1]>=MX3[i+ind1+1,ind1,2]) ||
-										(MX1[1,i]==MX1[1,i+ind1]&&
-											MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
-											MX5[1,1] <- 1
-										}else{
-											MX5[1,1] <- 0
-										}
-										if(((MX1[1,i] == MX1[1,i-ind1] && 
-											MX3[i-ind1+1,ind1,1] >= MX3[i-ind1+1,ind1,2])||
-										(MX1[1,i]==MX1[2,i-ind1] && 
-											MX3[i-ind1+1,ind1,1]<=MX3[i-ind1+1,ind1,2])) &&
-										((MX1[2,i]==MX1[2,i+ind1] &&
-											MX3[i+ind1+1,ind1,1] >= MX3[i+ind1+1,ind1,2])||
-										(MX1[2,i]==MX1[1,i+ind1] &&
-											MX3[i+ind1+1,ind1,1] <= MX3[i+ind1+1,ind1,2]))){
-											MX5[1,2] <- 1
-										}else{
-											MX5[1,2] <- 0
-										}
+									if(((MX1[1,i] == MX1[2,i-ind1] &&MX4[1,i-ind1+1] !=2) || 
+									(MX1[1,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1] !=1)) &&
+									((MX1[2,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1] != 2) || 
+									(MX1[2,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
+										MX5[1,1] <- 1
 									}else{
-										if(((MX1[1,i] == MX1[2,i-ind1] &&MX4[1,i-ind1+1] !=2) || 
-										(MX1[1,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1] !=1)) &&
-										((MX1[2,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1] != 2) || 
-										(MX1[2,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
-											MX5[1,1] <- 1
-										}else{
-											MX5[1,1] <- 0
-										}
-										if(((MX1[2,i] == MX1[2,i-ind1] && MX4[1,i-ind1+1] !=2) ||
-											(MX1[2,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1]!=1)) &&
-										((MX1[1,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1]!=2)||
-											(MX1[1,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
-											MX5[1,2] <- 1
-										}else{
-											MX5[1,2] <- 0
-										}
+										MX5[1,1] <- 0
 									}
-								}
-								if(MX5[1,1] ==1 &&MX5[1,2] ==0){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
-								}else if(MX5[1,1] == 0 && MX5[1,2] ==1){
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+									if(((MX1[2,i] == MX1[2,i-ind1] && MX4[1,i-ind1+1] !=2) ||
+										(MX1[2,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1]!=1)) &&
+									((MX1[1,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1]!=2)||
+										(MX1[1,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
+										MX5[1,2] <- 1
+									}else{
+										MX5[1,2] <- 0
+									}
 								}
 							}
+							if(MX5[1,1] ==1 &&MX5[1,2] ==0){
+								MX4[1,i+1] <- 1
+								MX3[i+1,ind1,1] <- max(MX3[i+1,ind1,])+1
+							}else if(MX5[1,1] == 0 && MX5[1,2] ==1){
+								MX4[1,i+1] <- 2
+								MX3[i+1,ind1,2] <- max(MX3[i+1,ind1,])+1
+							}
 						}
-						if(MX4[1,i+1] != 0){
-							j <- 1
-						}
+					}
+					if(MX4[1,i+1] != 0){
+						j <- 1
 					}
 				}
 			}
 			if(j!=1){
-					break
+				break
 			}
 		}
+
 	}
+
+
 	if(!is.right&&is.align){
-		alignLeft
-		alignRight
+		alignLeft(1)
+		alignRight(1)
 	}else if(is.right&&is.align){
-		alignRight
-		alignLeft
+		alignRight(1)
+		alignLeft(1)
 	}
 
 	#resolve 3-fold degenerate bases
@@ -1037,6 +1275,7 @@ if (seq.length!=0){ #if sequence exists
 	#based on MX4 and MX1 reconstruct two allelic sequences
 	temp1 <- c()
 	temp2 <- c()
+	temp3 <- c()
 	ambig2 <- 0
 	for(i in 1:seq.length){
 		if(MX4[1,i+1]==1){
@@ -1047,10 +1286,173 @@ if (seq.length!=0){ #if sequence exists
 			temp2 <- c(temp2, MX1[1,i])
 		}else{
 			ambig2 <- ambig2 +1
+			if(MX1[1,i]=="A" && MX1[2,i]=="G"){
+				temp1 <- c(temp1,"R")
+				temp2 <- c(temp2,"R")
+			}else if(MX1[1,i]=="C" && MX1[2,i]=="T"){
+				temp1 <- c(temp1,"Y")
+				temp2 <- c(temp2,"Y")
+			}else if(MX1[1,i]=="G" && MX1[2,i]=="C"){
+				temp1 <- c(temp1,"S")
+				temp2 <- c(temp2,"S")
+			}else if(MX1[1,i]=="A" && MX1[2,i]=="T"){
+				temp1 <- c(temp1,"W")
+				temp2 <- c(temp2,"W")
+			}else if(MX1[1,i]=="A" && MX1[2,i]=="C"){
+				temp1 <- c(temp1,"M")
+				temp2 <- c(temp2,"M")
+			}else if(MX1[1,i]=="G" && MX1[2,i]=="T"){
+				temp1 <- c(temp1,"K")
+				temp2 <- c(temp2,"K")
+			}
+		}
+		temp3 <- c(temp3,MX4[2,i+1])
+	}
+
+
+	#Align reconstructed allelic sequences (indicate gaps with dots)
+
+	SC <- 0
+	temp3 <- c()
+	temp4 <- c()
+	x <- c()
+	for(i in 1:seq.length){
+		if(MX4[2,i+1]>SC){
+			dots <- character(MX4[2,i+1]-SC)
+			dots[] <- "."
+			temp3 <- c(temp3,dots)
+			SC <- MX4[2,i+1]
+		}else if(MX4[2,i+1]<SC){
+			dots <- character(SC-MX4[2,i+1])
+			dots[] <- "."
+			temp4 <- c(temp4,dots)
+			SC <- MX4[2,i+1]
+		}
+		temp3 <- c(temp3,temp1[i])
+		temp4 <- c(temp4,temp2[i])
+		x <- c(x,abs(MX4[2,i+1]))
+	}
+	if(SC>0){
+		dots <- character(SC)
+		dots[] <- "."
+		temp4 <-c(temp4,dots)
+	}else{
+		dots <- character(abs(SC))
+		dots[]<- "."
+		temp3 <- c(temp3,dots)
+	}
+
+	#Outout reconstructed sequences with mismatches highlighted by red color
+
+	j <- length(temp4)
+	temp1 <- ""
+	temp2 <- ""
+	temp5 <- ""
+	SCMax <- 0
+	SCd <- 0
+	mismatches <- 0
+	ambiguities <- c("R","Y","K","M","S","W","B","D","H","V","N")
+	ambiguities.resolved <- c("AG","CT","GT","AC","CG","AT","CGT","AGT","ACT","ACG","ACGT")
+	for(i in 1:j){
+		SCa <- temp3[i]
+		SCb <- temp4[i]
+		SCc <- ""
+		if(SCa=="." && SCb=="."){
+		}else if(SCa==SCb && (any(SCa==c("A","C","G","T")))){
+			temp1 <- temp1 %+% SCa
+			temp2 <- temp2 %+% SCb
+		}else{
+			if(SCa=="."){
+				temp1 <- temp1 %+% SCa
+			}else{
+				temp1 <- temp1 %+% red(SCa)
+			}
+			if(SCb=="."){
+				temp2 <- temp2 %+% SCb
+			}else{
+				temp2 <- temp2 %+% red(SCb)
+			}
+		}
+
+		if(SCa == "." &&SCb=="."){
+		}else if(SCa=="."){
+			temp5 <- temp5 %+% red(SCb)
+			if(all(SCb!=c("A","C","G","T"))){
+				SCd <- SCd +1
+			}
+		}else if(SCb=="."){
+			temp5 <- temp5 %+% red(SCa)
+			if(all(SCa!=c("A","C","G","T"))){
+				SCd <- SCd + 1
+			}
+		}else if(SCa==SCb&&any(SCa==c("A","C","G","T"))){
+			temp5 <- temp5 %+% SCa
+			SCMax <- SCMax + 1
+		}else{
+			SCd <- SCd +1 
+			if(any(SCa==ambiguities)){
+				SCa <- ambiguities.resolved[SCa==ambiguities]
+			}
+			if(any(SCa==ambiguities)){
+				SCa <- ambiguities.resolved[SCa==ambiguities]
+			}
+			if((countCharOccurrences("A",SCa) >0 && countCharOccurrences("A",SCb) >0) ||
+				(countCharOccurrences("C",SCa) >0 && countCharOccurrences("C",SCb) >0) ||
+				(countCharOccurrences("G",SCa) >0 && countCharOccurrences("G",SCb) >0) ||
+				(countCharOccurrences("T",SCa) >0 && countCharOccurrences("T",SCb) >0)){
+				SCMax <- SCMax +1 
+			}else{
+				mismatches <- mismatches +1
+			}
+			if(countCharOccurrences("A",SCa) >0||countCharOccurrences("A",SCb) >0){
+				SCc <- SCc %+% "A"
+			}
+			if(countCharOccurrences("C",SCa) >0||countCharOccurrences("C",SCb) >0){
+				SCc <- SCc %+% "C"
+			}
+			if(countCharOccurrences("G",SCa) >0||countCharOccurrences("G",SCb) >0){
+				SCc <- SCc %+% "G"
+			}
+			if(countCharOccurrences("T",SCa) >0||countCharOccurrences("T",SCb) >0){
+				SCc <- SCc %+% "T"
+			}
+			if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("C",SCc) >0 && 
+			countCharOccurrences("T",SCc) >0 && countCharOccurrences("A",SCc) >0){
+				SCc <- "N"
+			}else if(countCharOccurrences("G",SCc) >0&&countCharOccurrences("C",SCc) >0&&
+				countCharOccurrences("T",SCc) >0){
+				SCc <- "B"
+			}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("A",SCc) >0 &&
+				countCharOccurrences("T",SCc) >0){
+				SCc <- "D"
+			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("C",SCc) >0 &&
+				countCharOccurrences("T",SCc) >0){
+				SCc <- "H"
+			}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("C",SCc) >0 &&
+				countCharOccurrences("A",SCc) >0){
+				SCc <- "V"
+			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("G",SCc) >0){
+				SCc <- "R"
+			}else if(countCharOccurrences("C",SCc) >0 && countCharOccurrences("T",SCc) >0){
+				SCc <- "Y"
+			}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("T",SCc) >0){
+				SCc <- "K"
+			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("C",SCc) >0){
+				SCc <- "M"
+			}else if(countCharOccurrences("C",SCc) >0 && countCharOccurrences("G",SCc) >0){
+				SCc <- "S"
+			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("T",SCc) >0){
+				SCc <- "W"
+			}
+			temp5 <- temp5 %+% red(SCc)
 		}
 	}
 
+	cat("Reconstructed Sequences:\n",temp1,"\n",temp2,"\nCombined Sequence:\n",temp5)
+
 }
+
+
 
 		       
 	       			       
