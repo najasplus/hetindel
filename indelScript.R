@@ -47,54 +47,198 @@ countCharOccurrences <- function(char, s) {
 
 alignLeft <- function(matrix,seq.length,seq.matrix){
 	z1 <- 0
-	for(i in seq.length:1){
+	for(i in seq.length:2){
 		matrix[4,i] <- 0
-	}if((seq.length - i - matrix[2,i]) >0){
-		j <- matrix[2,i+1]
-		x <- matrix[2,i]
-		if(x<j){
-			matrix[4,i] <- 1
-			if(any(matrix[1,i]==c(0,1))&&any(matrix[1,i+j]==c(0,1))&&
-				seq.matrix[1,i]==seq.matrix[2,i+j]){
-				matrix[2,i] <- j
-			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(2,0))&&
-				seq.matrix[2,i]==seq.matrix[1,i+j]){
-				matrix[2,i] <- j
-			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(1,0))&&
-				seq.matrix[2,i]==seq.matrix[2,i+j]){
-				matrix[2,i] <- j
-			}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
-				seq.matrix[1,i]==seq.matrix[1,i+j]){
-				matrix[2,i] <- j
-			}else{
-				matrix[4,i] <- 0
+		if((seq.length - i - matrix[2,i]) >0){
+			j <- matrix[2,i+1]
+			x <- matrix[2,i]
+			if(x<j){
+				matrix[4,i] <- 1
+				if(any(matrix[1,i]==c(0,1))&&any(matrix[1,i+j]==c(0,1))&&
+					seq.matrix[1,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(2,0))&&
+					seq.matrix[2,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(1,0))&&
+					seq.matrix[2,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
+					seq.matrix[1,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j
+				}else{
+					matrix[4,i] <- 0
+				}
+			}else if(x>0&&j<0){
+				matrix[4,i] <- 1
+				if(i<j){
+					matrix[4,i] <- 0
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i-j]==c(1,0))&&
+					seq.matrix[1,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i-j]==c(2,0))&&
+					seq.matrix[2,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i-j]==c(1,0))&&
+					seq.matrix[1,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i-j]==c(2,0))&&
+					seq.matrix[2,i.j]==seq.matrix[1,i]){
+					matrix[2,i] <-j
+				}else{
+					matrix[4,i] <- 0
+				}
+			}else if( x>j){
+				matrix[4,i] <- 1
+				if(i<j){
+					matrix[4,i] <- 0
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(1,0))&&
+					any(matrix[1,i-j]==c(1,0))&&seq.matrix[1,i]==seq.matrix[2,i+j]&&
+					seq.matrix[1,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(1,0))&&
+					any(matrix[1,i-j]==c(2,0))&&seq.matrix[1,i]==seq.matrix[2,i+j]&&
+					seq.matrix[2,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(2,0))&&
+					any(matrix[1,i-j]==c(1,0))&&seq.matrix[2,i]==seq.matrix[1,i+j]&&
+					seq.matrix[1,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(2,0))&&
+					any(matrix[1,i-j]==c(2,0))&&seq.matrix[2,i]==seq.matrix[1,i+j]&&
+					seq.matrix[2,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(1,0))&&
+					any(matrix[1,i-j]==c(1,0))&&seq.matrix[2,i]==seq.matrix[2,i+j]&&
+					seq.matrix[1,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(1,0))&&
+					any(matrix[1,i-j]==c(2,0))&&seq.matrix[2,i]==seq.matrix[2,i+j]&&
+					seq.matrix[2,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
+					any(matrix[1,i-j]==c(1,0))&&seq.matrix[1,i]==seq.matrix[1,i+j]&&
+					seq.matrix[1,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
+					any(matrix[1,i-j]==c(2,0))&&seq.matrix[1,i]==seq.matrix[1,i+j]&&
+					seq.matrix[2,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else{
+					matrix[4,i] <- 0
+				}
 			}
-		}else if(x>0&&j<0){
-			matrix[4,i] <- 1
-			if(i<j){
-				matrix[4,i] <- 0
-			}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i-j]==c(1,0))&&
-				seq.matrix[1,i-j]==seq.matrix[2,i]){
-				matrix[2,i] <- j
-			}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i-j]==c(2,0))&&
-				seq.matrix[2,i-j]==seq.matrix[2,i]){
-				matrix[2,i] <- j
-			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i-j]==c(1,0))&&
-				seq.matrix[1,i-j]==seq.matrix[1,i]){
-				matrix[2,i] <- j
-			}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i-j]==c(2,0))&&
-				seq.matrix[2,i.j]==seq.matrix[1,i]){
-				matrix[2,i] <-j
-			}else{
-				matrix[4,i] <- 0
-			}
-		}else if( x>j){
-			matrix[4,i] <- 1
-			if()
+		}
+		if(matrix[4,i] > 0){
+			z1 <- z1+1
 		}
 	}
+	return(list(matr=matrix,val=z1))
 }
-alignRight <- function(x){}
+alignRight <- function(matrix,seq.length,seq.matrix){
+	z1 <- 0
+	for(i in 2:seq.length+1){
+		matrix[4,i] <- 0
+		if((i- matrix[2,i]) >0){
+			j <- matrix[2,i-1]
+			x <- matrix[2,i]
+			if(x<j){
+				matrix[4,i] <- 1
+				if(i<j){
+					matrix[4,i] <- 0
+				}else  if(any(matrix[1,i-j]==c(1,0))&&any(matrix[1,i]==c(1,0))&&
+					seq.matrix[1,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else  if(any(matrix[1,i-j]==c(2,0))&&any(matrix[1,i]==c(2,0))&&
+					seq.matrix[2,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else  if(any(matrix[1,i-j]==c(1,0))&&any(matrix[1,i]==c(2,0))&&
+					seq.matrix[1,i-j]==seq.matrix[1,i]){
+					matrix[2,i] <- j
+				}else  if(any(matrix[1,i-j]==c(2,0))&&any(matrix[1,i]==c(1,0))&&
+					seq.matrix[2,i-j]==seq.matrix[2,i]){
+					matrix[2,i] <- j
+				}else{
+					matrix[4,i] <- 0
+				}
+			}else if(j>0 && x<0){
+				matrix[4,i] <- 1
+				if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(1,0))&&
+					seq.matrix[1,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j 
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
+					seq.matrix[1,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j 
+				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(1,0))&&
+					seq.matrix[2,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j 
+				}else if(any(matrix[1,i]==c(1,0))&&any(matrix[1,i+j]==c(2,0))&&
+					seq.matrix[1,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j 
+				}else{
+					matrix[4,i] <- 0
+				}
+			}else if( x>j){
+				matrix[4,i] <- 1
+				if(i<j){
+					matrix[4,i] <- 0
+				}else if(any(matrix[1,i-j]==c(1,0))&&any(matrix[1,i]==c(1,0))&&
+					any(matrix[1,i+j]==c(1,0))&&seq.matrix[1,i-j]==seq.matrix[2,i]&&
+					seq.matrix[1,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(1,0))&&any(matrix[1,i]==c(1,0))&&
+					any(matrix[1,i+j]==c(2,0))&&seq.matrix[1,i-j]==seq.matrix[2,i]&&
+					seq.matrix[1,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(2,0))&&any(matrix[1,i]==c(2,0))&&
+					any(matrix[1,i+j]==c(1,0))&&seq.matrix[2,i-j]==seq.matrix[1,i]&&
+					seq.matrix[2,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(2,0))&&any(matrix[1,i]==c(2,0))&&
+					any(matrix[1,i+j]==c(2,0))&&seq.matrix[2,i-j]==seq.matrix[1,i]&&
+					seq.matrix[2,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(1,0))&&any(matrix[1,i]==c(2,0))&&
+					any(matrix[1,i+j]==c(1,0))&&seq.matrix[1,i-j]==seq.matrix[1,i]&&
+					seq.matrix[2,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(1,0))&&any(matrix[1,i]==c(2,0))&&
+					any(matrix[1,i+j]==c(2,0))&&seq.matrix[1,i-j]==seq.matrix[1,i]&&
+					seq.matrix[2,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(2,0))&&any(matrix[1,i]==c(1,0))&&
+					any(matrix[1,i+j]==c(1,0))&&seq.matrix[2,i-j]==seq.matrix[2,i]&&
+					seq.matrix[1,i]==seq.matrix[2,i+j]){
+					matrix[2,i] <- j
+				}else if(any(matrix[1,i-j]==c(2,0))&&any(matrix[1,i]==c(1,0))&&
+					any(matrix[1,i+j]==c(2,0))&&seq.matrix[2,i-j]==seq.matrix[2,i]&&
+					seq.matrix[1,i]==seq.matrix[1,i+j]){
+					matrix[2,i] <- j
+				}else{
+					matrix[4,i] <- 0
+				}
+			}
+		}
+		if(matrix[4,i] >0 ){
+			z1 <- z1+1
+		}
+	}
+	for(i in 1:seq.length){
+		if(matrix[4,i]>0){
+			if(matrix[4,i-1]>0){
+				matrix[4,i] <- matrix[4,i-1]
+			}else{
+				for(j in i:seq.length){
+					if(matrix[4,j]==0){
+						break
+					}
+				}
+				matrix[4,i] <-j-i
+			}
+		}
+	}
+	return(list(matr=matrix,value=z1))
+}
 
 
 #print(opt$input)
@@ -467,7 +611,7 @@ if (seq.length!=0){ #if sequence exists
 			break
 		}
 	}
-	print(MX4)
+#	print(MX4)
 
 	#resolve the remaining ambiguities.
 	#MX5 is used to determine the possibility of resolving an ambiguous position with the 
@@ -526,9 +670,10 @@ if (seq.length!=0){ #if sequence exists
 	
 	if(SCc==1){
 		repeat{
-			alignLeft(1)
-			alignRight(1)
+			MX4 <- alignLeft(MX4,seq.length,MX1)$matr
+			MX4 <- alignRight(MX4,seq.length,MX1)$matr
 
+			print(MX4)
 			#calculate and mark the ambiguities that could potentially be resolved
 
 			for(i in 1:seq.length){
@@ -551,15 +696,15 @@ if (seq.length!=0){ #if sequence exists
 						}
 						if(abs(MX4[2,i-j+1]) < j && MX4[2,i+1] >0){
 							MX4[3,i+1] <- 1
-						}else if(j*SCc +1 > seq.length){ # evtl +1
+						}else if((j*SCc +i) > seq.length){ # evtl +1
 							MX4[3, i+1] <- 1
 						}else if(abs(MX4[2,j*SCc+i+1]) != j){
 							MX4[3,i+1] <- 1
-						}else if(abs(MX4[2,j*SCc+i+1+MX4[3,i+1]]) != j){
+						}else if(abs(MX4[2,j*SCc+i+1+MX4[4,i+1]]) != j){
 							MX4[3,i+1] <- 1
-						}else if(MX4[2,i+1] > 0 && (SCc / 2 )!=floor(SCc/2) && 
+						}else if((MX4[2,i+1] > 0) && ((SCc / 2 ) != floor(SCc/2)) && 
 							((MX1[MX4[1,i-j+1],i-j] == MX1[2,i] && 
-								MX1[1,i] == MX1[3-MX4[1,j*SCc*i+1],j*SCc+1]) || 
+								MX1[1,i] == MX1[3-MX4[1,j*SCc+i+1],j*SCc+i]) || 
 							(MX1[MX4[1,i-j+1],i-j]==MX1[1,i] && 
 								MX1[2,i]==MX1[3-MX4[1,j*SCc+i+1],j*SCc+i]))){
 							MX4[3,i+1] <- 1
@@ -601,7 +746,7 @@ if (seq.length!=0){ #if sequence exists
 						}
 						if(MX4[2,i-z+1] != MX4[2,i+z+1]){
 							break
-						}
+						}4
 					}
 					if(z<=i && z-MX4[3,i+1] <= max.shift+1 && z <= seq.length -(i+1)){
 						ind1 <- abs(MX4[2,i-z+1])
@@ -1237,11 +1382,11 @@ if (seq.length!=0){ #if sequence exists
 
 
 	if(!is.right&&is.align){
-		alignLeft(1)
-		alignRight(1)
+		MX4<- alignLeft(MX4,seq.length,MX1)$matr
+		MX4 <- alignRight(MX4,seq.length,MX1)$matr
 	}else if(is.right&&is.align){
-		alignRight(1)
-		alignLeft(1)
+		MX4 <- alignRight(MX4,seq.length,MX1)$matr
+		MX4 <- alignLeft(MX4,seq.length,MX1)$matr
 	}
 
 	#resolve 3-fold degenerate bases
