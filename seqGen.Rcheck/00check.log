@@ -1,0 +1,96 @@
+* using log directory ‘/home/robert/Dokumente/MPI/hetindel/seqGen.Rcheck’
+* using R version 3.5.0 (2018-04-23)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ‘seqGen/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘seqGen’ version ‘1.0’
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... NOTE
+Subdirectory ‘seqGen’ seems to contain an installed version of the package.
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘seqGen’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Malformed Title field: should not end in a period.
+Non-standard license specification:
+  The Unlicense
+Standardizable: FALSE
+Checking should be performed on sources prepared by ‘R CMD build’.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+generateRandBioString: no visible global function definition for
+  ‘runif’
+generateSeq: no visible global function definition for ‘runif’
+introduceShift: no visible global function definition for ‘runif’
+randomBase: no visible global function definition for ‘runif’
+Undefined global functions or variables:
+  runif
+Consider adding
+  importFrom("stats", "runif")
+to your NAMESPACE file.
+* checking Rd files ... WARNING
+prepare_Rd: combineSeq.Rd:19: unexpected section header '\details'
+prepare_Rd: combineSeq.Rd:22: unexpected section header '\value'
+prepare_Rd: combineSeq.Rd:25: unexpected section header '\references'
+prepare_Rd: combineSeq.Rd:28: unexpected section header '\author'
+prepare_Rd: combineSeq.Rd:30: unexpected section header '\note'
+prepare_Rd: combineSeq.Rd:36: unexpected section header '\seealso'
+prepare_Rd: combineSeq.Rd:39: unexpected section header '\examples'
+prepare_Rd: combineSeq.Rd:46: unexpected section header '\keyword'
+prepare_Rd: combineSeq.Rd:47: unexpected END_OF_INPUT '
+'
+prepare_Rd: generateRandBioString.Rd:27-29: Dropping empty section \details
+prepare_Rd: generateRandBioString.Rd:39-41: Dropping empty section \note
+prepare_Rd: generateRandBioString.Rd:36-38: Dropping empty section \author
+prepare_Rd: generateRandBioString.Rd:33-35: Dropping empty section \references
+prepare_Rd: generateRandBioString.Rd:45-47: Dropping empty section \seealso
+prepare_Rd: generateSeq.Rd:22-24: Dropping empty section \details
+prepare_Rd: generateSeq.Rd:33-35: Dropping empty section \note
+prepare_Rd: generateSeq.Rd:28-30: Dropping empty section \references
+prepare_Rd: generateSeq.Rd:39-41: Dropping empty section \seealso
+prepare_Rd: introduceShift.Rd:23-25: Dropping empty section \details
+prepare_Rd: introduceShift.Rd:34-36: Dropping empty section \note
+prepare_Rd: introduceShift.Rd:29-31: Dropping empty section \references
+prepare_Rd: introduceShift.Rd:40-42: Dropping empty section \seealso
+prepare_Rd: iupacNotation.Rd:15-17: Dropping empty section \details
+prepare_Rd: iupacNotation.Rd:27-29: Dropping empty section \note
+prepare_Rd: iupacNotation.Rd:21-23: Dropping empty section \references
+prepare_Rd: iupacNotation.Rd:33-35: Dropping empty section \seealso
+prepare_Rd: randomBase.Rd:15-17: Dropping empty section \details
+prepare_Rd: randomBase.Rd:27-29: Dropping empty section \note
+prepare_Rd: randomBase.Rd:21-23: Dropping empty section \references
+prepare_Rd: randomBase.Rd:33-35: Dropping empty section \seealso
+prepare_Rd: seqGen-package.Rd:23-24: Dropping empty section \references
+prepare_Rd: seqGen-package.Rd:27-28: Dropping empty section \seealso
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking PDF version of manual ... OK
+* DONE
+Status: 1 WARNING, 3 NOTEs

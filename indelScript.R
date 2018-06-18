@@ -1,6 +1,7 @@
-suppressPackageStartupMessages(library(optparse))
-suppressPackageStartupMessages(library(readr))
-suppressPackageStartupMessages(library(crayon))
+library("optparse")
+library("readr")
+library("crayon")
+library("seqGen")
 
 #make command line options 
 option_list <- list(
@@ -33,12 +34,15 @@ option_list <- list(
 		help="Option for not displaying reconstructed allelic sequences."),
 	make_option(c("-g","--long-indel"),action="store_true",default=FALSE,
 		help="Display alternative, longer variants of reconstructed insertions.
-		[default \"%default\"]")
+		[default \"%default\"]"),
+	make_option(c("-G","--generate"),type="list",default=NULL,
+		help="Generate a random BioString with introduced shifts in IUPAC Notation. 
+		Input as: [length, exact, occurence] length: length of sequence; one of 150, 300 ,700.
+		exact: whether or not the shift is exact or has a variance in occurence; one of TRUE, FALSE.
+		occurence: occurence of the shift, one of b (begin), m (middle), q1 (first quater), q3 (third quater)." )
 	)
 opt_parser = OptionParser(option_list=option_list)
 opt = parse_args(opt_parser)
-
-
 
 
 options(error=traceback)
@@ -277,6 +281,24 @@ if(!is.null(opt$input)){
 	}
 }else if (!is.null(opt$string)){
 	sequence <- opt$string
+}else if(length(opt$generate)>0){
+	params <- unlist(strsplit(opt$generate,","))
+	if(length(params) != 3){
+		print_help(opt_parser)
+		stop("Please provide exactly 3 parameters for generate in the form of: %length, %exact, %occurence",call=FALSE)
+	}
+	generate.length <- as.numeric(params[1])
+	if(!any(generate.length==c(150,300,700))){
+		print_help(opt_parser)
+		stop("Please only choose length of 150, 300, or 700 for generated Sequences.",call=FALSE)
+	}
+	generate.exact <- as.logical(params[2])
+	generate.occurence <- params[3]
+	if(!any(generate.occurence==c("m","b","q1","q3"))){
+		print_help(opt_parser)
+		stop("Please only choose occurence of \"b\", \"m\", \"q1\", \"q3\".",call=FALSE)
+	}
+	sequence <- generateRandBioString(generate.length,generate.exact,generate.occurence)
 }else{
 	print_help(opt_parser)
 	stop("Please provide an input file or string.\n",call.=FALSE)
@@ -628,7 +650,7 @@ if (seq.length!=0){ #if sequence exists
 			break
 		}
 	}
-#	print(MX4)
+	print(MX4)
 
 	#resolve the remaining ambiguities.
 	#MX5 is used to determine the possibility of resolving an ambiguous position with the 
@@ -701,23 +723,23 @@ if (seq.length!=0){ #if sequence exists
 				if(MX4[1, i+1]==0){
 					j <- abs(MX4[2,i+1])
 
+
+					print(j*SCc+i+1)
+					print(i)
 					if(i<=j){
 						MX4[3,i+1] <- 1	#1 could be resolved, 0- cannot be resolved
 					}else if(j==0){
 						MX4[3,i+1] <- 1
-					}else if(MX4[3,i-j+1] && abs(MX4[2,i-j+1])==j && MX4[1,i-j+1]==0){
+					}else if(MX4[3,i-j+1] == 0 && abs(MX4[2,i-j+1])==j && MX4[1,i-j+1]==0){
 						MX4[3,i+1] <- 0
 					}else if(MX4[3,i-j+1]==1 && abs(MX4[2,i-j+1])==j && MX4[1,i-j+1]==0){
 						MX4[3,i+1] <- 1
-					}else{
+					}else if(j*SCc+i+1 <=seq.length){
 						SCc <- 1
 						while(MX4[1,j*SCc+i+1]==0 && abs(MX4[2,j*SCc+1+i])==j && 
 							j*SCc+i+1<=seq.length){
 							SCc <- SCc+1
 						}
-
-
-						
 						#cat("erste Stelle",3-MX4[1,j*SCc+i+1],"\n")
 						#cat("zweite Stelle",j*SCc+i,"\n")
 						#cat("Wert",MX1[3-MX4[1,j*SCc+i+1],j*SCc+i],"\n")

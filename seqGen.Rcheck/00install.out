@@ -1,0 +1,18 @@
+* installing *source* package ‘seqGen’ ...
+** R
+** byte-compile and prepare package for lazy loading
+** help
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:19: unexpected section header '\details'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:22: unexpected section header '\value'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:25: unexpected section header '\references'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:28: unexpected section header '\author'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:30: unexpected section header '\note'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:36: unexpected section header '\seealso'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:39: unexpected section header '\examples'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:46: unexpected section header '\keyword'
+Warnung: /home/robert/Dokumente/MPI/hetindel/seqGen/man/combineSeq.Rd:47: unexpected END_OF_INPUT '
+'
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (seqGen)

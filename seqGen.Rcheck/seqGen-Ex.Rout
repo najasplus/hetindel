@@ -1,0 +1,184 @@
+
+R version 3.5.0 (2018-04-23) -- "Joy in Playing"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "seqGen"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('seqGen')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("generateRandBioString")
+> ### * generateRandBioString
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: generateRandBioString
+> ### Title: Generate Random Bio-String
+> ### Aliases: generateRandBioString
+> ### Keywords: datagen
+> 
+> ### ** Examples
+> 
+> biostring <- generateRandBioString(150)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("generateSeq")
+> ### * generateSeq
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: generateSeq
+> ### Title: Generate DNA sequence
+> ### Aliases: generateSeq
+> ### Keywords: datagen
+> 
+> ### ** Examples
+> 
+> seq <- generateSeq(150)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("introduceShift")
+> ### * introduceShift
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: introduceShift
+> ### Title: Shift sequence
+> ### Aliases: introduceShift
+> ### Keywords: datagen
+> 
+> ### ** Examples
+> 
+> sequence <- character(150)
+> sequence[] <- "A"
+> shiftedSeq <- introduceShift(sequence)
+> print(shiftedSeq)
+  [1] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [19] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [37] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [55] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [73] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [91] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[109] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[127] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[145] "A" "A" "A" "A" "A" "A" "A" "A"
+> shiftedSeq <- introduceShift(sequence,FALSE)
+> print(shiftedSeq)
+  [1] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [19] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [37] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [55] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [73] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [91] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[109] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[127] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[145] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+> shiftedSeq <- introduceShift(sequence,occurrence="b")
+> print(shiftedSeq)
+  [1] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [19] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [37] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [55] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [73] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+ [91] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[109] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[127] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+[145] "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A" "A"
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("iupacNotation")
+> ### * iupacNotation
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: iupacNotation
+> ### Title: IUPAC Notation
+> ### Aliases: iupacNotation
+> ### Keywords: datagen
+> 
+> ### ** Examples
+> 
+> chars <- c("A","G")
+> iupac <- iupacNotation(chars)
+> print(iupac)
+[1] "R"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("randomBase")
+> ### * randomBase
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: randomBase
+> ### Title: Randomized Base
+> ### Aliases: randomBase
+> ### Keywords: datagen
+> 
+> ### ** Examples
+> 
+> base <- randomBase()
+> print(base)
+[1] "C"
+> 
+> 
+> 
+> cleanEx()
+> nameEx("seqGen-package")
+> ### * seqGen-package
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: seqGen-package
+> ### Title: Generates random DNA-String with introduced shifts.
+> ### Aliases: seqGen-package seqGen
+> ### Keywords: package
+> 
+> ### ** Examples
+> 
+> generateRandBioString(150)
+[1] "CCGTATTGGAAAGCTCGTCTTAGACCACTCCGCATGTAGCTGTGGTACGGCTCAAACGGCTCCCGCCTATCTCCCTTCTTCKYCTWSRMMWAGWWWMMKKKYCYKRRCYKKRMCWRKRCSWMSAYSKMMRKMRRWGGRWGKGRSKSRGAYGCAGAT"
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.07 0.003 0.073 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

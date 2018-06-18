@@ -1,0 +1,10 @@
+Package: seqGen
+Type: Package
+Title: Generates random DNA-String with introduced shifts.
+Version: 1.0
+Date: 2018-06-11
+Author: Robert Deibel
+Maintainer: Robert Deibel <deibel.robert@googlemail.com>
+Description: This is a package for creation of random DNA-strings with shifts of different lengths and occurences. Strings are output in IUPAC notation.
+License: The Unlicense
+Built: R 3.5.0; ; 2018-06-18 17:39:16 UTC; unix

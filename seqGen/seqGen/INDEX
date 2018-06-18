@@ -1,0 +1,8 @@
+combineSeq              Combine Sequences
+generateRandBioString   Generate Random Bio-String
+generateSeq             Generate DNA sequence
+introduceShift          Shift sequence
+iupacNotation           IUPAC Notation
+randomBase              Randomized Base
+seqGen-package          Generates random DNA-String with introduced
+                        shifts.

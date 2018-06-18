@@ -1,0 +1,8 @@
+seqGen-package	seqGen-package
+combineSeq	combineSeq
+generateRandBioString	generateRandBioString
+generateSeq	generateSeq
+introduceShift	introduceShift
+iupacNotation	iupacNotation
+randomBase	randomBase
+seqGen	seqGen-package
