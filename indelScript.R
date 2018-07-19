@@ -532,6 +532,7 @@ if (seq.length!=0){ #if sequence exists
 	#add MX2 and MX3 store result in MX3
 	MX3 <- MX2+MX3
 
+	
 	#make list of possible indels
 	x <- c()
 	for (i in 2:(seq.length+1)){

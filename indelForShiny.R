@@ -1,7 +1,5 @@
-library("optparse")
 library("readr")
 library("crayon")
-library("seqGen")
 
 countCharOccurrences <- function(char, s) {
     s2 <- gsub(char,"",s)
@@ -501,7 +499,7 @@ calculate.phase.shift <- function(scores,sequences,max.shift,fixed.shifts,possib
 		
 		u <- c()
 		pos.one <- 0
-
+		z <- 0
 		for(i in 1:seq.length){
 			if(result[2,i+1] != result[2,i]){
 				for(z in 1:result[2,i+1]){
