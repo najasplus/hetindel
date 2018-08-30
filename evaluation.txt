@@ -1,0 +1,66 @@
+For short indels and per base error
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		7062		8116		3929		
+300		129268		195202		69374		
+700		317355		463405		172022		
+For long indels and per base error
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		614			646			785		
+300		636			634			714		
+700		614			648			632		
+
+For short indels and percentage per base error
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		4.4268		5.0822		2.4687		
+300		39.8289		58.7007		21.7692		
+700		41.6375		59.5397		23.0133		
+For long indels and percentage per base error
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		0.384		0.4038		0.4918		
+300		0.1926		0.1923		0.2164		
+700		0.0787		0.0831		0.081		
+
+For short indels and found indels
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		15			10			9		
+300		22			43			7		
+700		6			30			0		
+For long indels and found indels
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		13			15			19		
+300		18			18			10		
+700		13			18			10		
+
+For short indels and reconstructed sequence
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		884			912			896		
+300		0			0			0		
+700		0			0			0		
+For long indels and reconstructed sequence
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		987			985			977		
+300		982			982			989		
+700		987			982			990		
+	
+For short indels and incorrect sequence
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		101			78			95		
+300		978			957			993		
+700		994			970			1000		
+For long indels and incorrect sequence
+		Positions
+Lengths	middle	first_quater	last_quater	
+150		0			0			4		
+300		0			0			1		
+700		0			0			0		
+
+
