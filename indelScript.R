@@ -271,7 +271,7 @@ if(!is.null(opt$input)){
 	sequence <- trimws(readLines(opt$input))
 
 	#get combined sequence
-	sequence <- sequence[grep("Combined",sequence)+1]
+	sequence <- sequence[grep("/.",sequence)+1]
 
 	if(length(sequence)<seq.number){
 		print_help(opt_parser)
@@ -661,7 +661,7 @@ if (seq.length!=0){ #if sequence exists
 	#MX5 is used to determine the possibility of resolving an ambiguous position with the 
 	#same phase shift as the preceding positions or with the same shift as 
 	#the following positions
-	MX5 <- matrix(,nrow=4,ncol=2)
+	MX5 <- matrix(0,nrow=4,ncol=2)
 
 	#mark and rotate positions for long indels 
 	if (is.longindel){
@@ -686,7 +686,7 @@ if (seq.length!=0){ #if sequence exists
 		SCd <- 0
 		for(i in 1:seq.length){
 			if(MX4[2,i+1] != SCa){
-				for(j in max(1,i-10):min(seq.length,i+10)){
+				for(j in max(1,i-9):min(seq.length,i+11)){
 					if(MX3[j,SCa+1,2]==MX3[j,MX4[2,i+1]+1,2] && MX3[j,SCa+1,2] >= MX3[j,SCa+1,1] && 
 						MX3[j,MX4[2,i+1]+1,2]>= MX3[j,MX4[2,i+1]+1,1]){
 						MX4[1,j+1] <- 0
@@ -700,7 +700,7 @@ if (seq.length!=0){ #if sequence exists
 					}
 				}
 				if(SCa != 0){
-					SCd <- abs(Scd-1)
+					SCd <- abs(SCd-1)
 				}
 				SCa <- MX4[2,i+1]
 			}
@@ -892,7 +892,7 @@ if (seq.length!=0){ #if sequence exists
 								}
 								if((ind1 < ind2) &&
 									((MX1[2,i]==MX1[1,i-ind2]&&
-										MX3[i-ind1+1,ind1+11,1]>=MX3[i-ind1+1,ind1+1,2])||
+										MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2])||
 									(MX1[2,i]==MX1[2,i-ind1]&&
 										MX3[i-ind1+1,ind1+1,1]<=MX3[i-ind1+1,ind1+1,2]))&&
 									((MX1[1,i]==MX1[2,i+ind2]&&
@@ -1122,7 +1122,6 @@ if (seq.length!=0){ #if sequence exists
 										MX5[2,2] <- 0
 									}
 								}
-								######################################################
 							}else if(i<=ind1){
 									if(((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||
 										(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
@@ -1131,7 +1130,7 @@ if (seq.length!=0){ #if sequence exists
 										MX5[1,1] <- 0
 									}
 									if(((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1]!=2)||
-										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]))){
+										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
 										MX5[1,2] <- 1
 									}else{
 										MX5[1,2] <- 0
@@ -1160,7 +1159,6 @@ if (seq.length!=0){ #if sequence exists
 						if(ind2==0){
 							MX5[2,] <- 0
 						}
-#############################################################################################
 						if(!is.longindel){
 							if(ind1>ind2){
 								if(MX4[2,i]==ind1){
@@ -1330,7 +1328,7 @@ if (seq.length!=0){ #if sequence exists
 							}else if(all(MX5[3,]==1)){
 							}else if(all(MX5[4,]==1)){
 							}else if(all(MX5[4,]==c(1,0))){
-								X4[1,i+1] <- 1
+								MX4[1,i+1] <- 1
 								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
 								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
 							}else if(all(MX5[4,]==c(0,1))){
@@ -1338,7 +1336,7 @@ if (seq.length!=0){ #if sequence exists
 								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
 								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
 							}else if(all(MX5[3,]==c(1,0))){
-								X4[1,i+1] <- 1
+								MX4[1,i+1] <- 1
 								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
 								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
 							}else if(all(MX5[3,]==c(0,1))){
@@ -1600,92 +1598,94 @@ if (seq.length!=0){ #if sequence exists
 		SCa <- temp3[i]
 		SCb <- temp4[i]
 		SCc <- ""
-		if(SCa=="." && SCb=="."){
-		}else if(SCa==SCb && (any(SCa==c("A","C","G","T")))){
-			temp1 <- temp1 %+% SCa
-			temp2 <- temp2 %+% SCb
-		}else{
-			if(SCa=="."){
+		if(!is.na(SCa)&&!is.na(SCb)){
+			if(SCa=="." && SCb=="."){
+			}else if(SCa==SCb && (any(SCa==c("A","C","G","T")))){
 				temp1 <- temp1 %+% SCa
-			}else{
-				temp1 <- temp1 %+% red(SCa)
-			}
-			if(SCb=="."){
 				temp2 <- temp2 %+% SCb
 			}else{
-				temp2 <- temp2 %+% red(SCb)
+				if(SCa=="."){
+					temp1 <- temp1 %+% SCa
+				}else{
+					temp1 <- temp1 %+% red(SCa)
+				}
+				if(SCb=="."){
+					temp2 <- temp2 %+% SCb
+				}else{
+					temp2 <- temp2 %+% red(SCb)
+				}
 			}
-		}
 
-		if(SCa == "." &&SCb=="."){
-		}else if(SCa=="."){
-			temp5 <- temp5 %+% red(SCb)
-			if(all(SCb!=c("A","C","G","T"))){
-				SCd <- SCd +1
-			}
-		}else if(SCb=="."){
-			temp5 <- temp5 %+% red(SCa)
-			if(all(SCa!=c("A","C","G","T"))){
-				SCd <- SCd + 1
-			}
-		}else if(SCa==SCb&&any(SCa==c("A","C","G","T"))){
-			temp5 <- temp5 %+% SCa
-			SCMax <- SCMax + 1
-		}else{
-			SCd <- SCd +1 
-			if(any(SCa==ambiguities)){
-				SCa <- ambiguities.resolved[SCa==ambiguities]
-			}
-			if(any(SCa==ambiguities)){
-				SCa <- ambiguities.resolved[SCa==ambiguities]
-			}
-			if((countCharOccurrences("A",SCa) >0 && countCharOccurrences("A",SCb) >0) ||
-				(countCharOccurrences("C",SCa) >0 && countCharOccurrences("C",SCb) >0) ||
-				(countCharOccurrences("G",SCa) >0 && countCharOccurrences("G",SCb) >0) ||
-				(countCharOccurrences("T",SCa) >0 && countCharOccurrences("T",SCb) >0)){
-				SCMax <- SCMax +1 
+			if(SCa == "." &&SCb=="."){
+			}else if(SCa=="."){
+				temp5 <- temp5 %+% red(SCb)
+				if(all(SCb!=c("A","C","G","T"))){
+					SCd <- SCd +1
+				}
+			}else if(SCb=="."){
+				temp5 <- temp5 %+% red(SCa)
+				if(all(SCa!=c("A","C","G","T"))){
+					SCd <- SCd + 1
+				}
+			}else if(SCa==SCb&&any(SCa==c("A","C","G","T"))){
+				temp5 <- temp5 %+% SCa
+				SCMax <- SCMax + 1
 			}else{
-				mismatches <- mismatches +1
-			}
-			if(countCharOccurrences("A",SCa) >0||countCharOccurrences("A",SCb) >0){
-				SCc <- SCc %+% "A"
-			}
-			if(countCharOccurrences("C",SCa) >0||countCharOccurrences("C",SCb) >0){
-				SCc <- SCc %+% "C"
-			}
-			if(countCharOccurrences("G",SCa) >0||countCharOccurrences("G",SCb) >0){
-				SCc <- SCc %+% "G"
-			}
-			if(countCharOccurrences("T",SCa) >0||countCharOccurrences("T",SCb) >0){
-				SCc <- SCc %+% "T"
-			}
-			if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("C",SCc) >0 && 
-			countCharOccurrences("T",SCc) >0 && countCharOccurrences("A",SCc) >0){
-				SCc <- "N"
-			}else if(countCharOccurrences("G",SCc) >0&&countCharOccurrences("C",SCc) >0&&
-				countCharOccurrences("T",SCc) >0){
-				SCc <- "B"
-			}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("A",SCc) >0 &&
-				countCharOccurrences("T",SCc) >0){
-				SCc <- "D"
-			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("C",SCc) >0 &&
-				countCharOccurrences("T",SCc) >0){
-				SCc <- "H"
-			}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("C",SCc) >0 &&
-				countCharOccurrences("A",SCc) >0){
-				SCc <- "V"
-			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("G",SCc) >0){
-				SCc <- "R"
-			}else if(countCharOccurrences("C",SCc) >0 && countCharOccurrences("T",SCc) >0){
-				SCc <- "Y"
-			}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("T",SCc) >0){
-				SCc <- "K"
-			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("C",SCc) >0){
-				SCc <- "M"
-			}else if(countCharOccurrences("C",SCc) >0 && countCharOccurrences("G",SCc) >0){
-				SCc <- "S"
-			}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("T",SCc) >0){
-				SCc <- "W"
+				SCd <- SCd +1 
+				if(any(SCa==ambiguities)){
+					SCa <- ambiguities.resolved[SCa==ambiguities]
+				}
+				if(any(SCa==ambiguities)){
+					SCa <- ambiguities.resolved[SCa==ambiguities]
+				}
+				if((countCharOccurrences("A",SCa) >0 && countCharOccurrences("A",SCb) >0) ||
+					(countCharOccurrences("C",SCa) >0 && countCharOccurrences("C",SCb) >0) ||
+					(countCharOccurrences("G",SCa) >0 && countCharOccurrences("G",SCb) >0) ||
+					(countCharOccurrences("T",SCa) >0 && countCharOccurrences("T",SCb) >0)){
+					SCMax <- SCMax +1 
+				}else{
+					mismatches <- mismatches +1
+				}
+				if(countCharOccurrences("A",SCa) >0||countCharOccurrences("A",SCb) >0){
+					SCc <- SCc %+% "A"
+				}
+				if(countCharOccurrences("C",SCa) >0||countCharOccurrences("C",SCb) >0){
+					SCc <- SCc %+% "C"
+				}
+				if(countCharOccurrences("G",SCa) >0||countCharOccurrences("G",SCb) >0){
+					SCc <- SCc %+% "G"
+				}
+				if(countCharOccurrences("T",SCa) >0||countCharOccurrences("T",SCb) >0){
+					SCc <- SCc %+% "T"
+				}
+				if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("C",SCc) >0 && 
+				countCharOccurrences("T",SCc) >0 && countCharOccurrences("A",SCc) >0){
+					SCc <- "N"
+				}else if(countCharOccurrences("G",SCc) >0&&countCharOccurrences("C",SCc) >0&&
+					countCharOccurrences("T",SCc) >0){
+					SCc <- "B"
+				}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("A",SCc) >0 &&
+					countCharOccurrences("T",SCc) >0){
+					SCc <- "D"
+				}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("C",SCc) >0 &&
+					countCharOccurrences("T",SCc) >0){
+					SCc <- "H"
+				}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("C",SCc) >0 &&
+					countCharOccurrences("A",SCc) >0){
+					SCc <- "V"
+				}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("G",SCc) >0){
+					SCc <- "R"
+				}else if(countCharOccurrences("C",SCc) >0 && countCharOccurrences("T",SCc) >0){
+					SCc <- "Y"
+				}else if(countCharOccurrences("G",SCc) >0 && countCharOccurrences("T",SCc) >0){
+					SCc <- "K"
+				}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("C",SCc) >0){
+					SCc <- "M"
+				}else if(countCharOccurrences("C",SCc) >0 && countCharOccurrences("G",SCc) >0){
+					SCc <- "S"
+				}else if(countCharOccurrences("A",SCc) >0 && countCharOccurrences("T",SCc) >0){
+					SCc <- "W"
+				}
 			}
 			temp5 <- temp5 %+% red(SCc)
 		}

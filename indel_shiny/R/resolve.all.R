@@ -4,7 +4,7 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 	resolved <- matrix(,nrow=4,ncol=2)
 
 	seq.length <- length(seq.matrix[1,])
-	if(shift.score==1){
+		if(shift.score==1){
 		repeat{
 			phase.shift.matrix <- alignLeft(phase.shift.matrix,seq.length,seq.matrix)$matr
 			phase.shift.matrix <- alignRight(phase.shift.matrix,seq.length,seq.matrix)$matr
@@ -130,25 +130,25 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							if((i> ind1) && (i>ind2) && (seq.length -i)>ind1 && 
 								(seq.length-i)>ind2){
 								if(((seq.matrix[2,i]==seq.matrix[1,i-ind1] && 
-									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2]) || 
+									score[i-ind1+1,ind1+1,1]>=score[i-ind1+1,ind1+1,2]) || 
 								(seq.matrix[2,i] == seq.matrix[2,i-ind1] && 
-									scores[i-ind1+1,ind1+1,1] <= scores[i-ind1+1,ind1+1,2])) && 
+									score[i-ind1+1,ind1+1,1] <= score[i-ind1+1,ind1+1,2])) && 
 								((seq.matrix[1,i] == seq.matrix[2,i+ind1] && 
-									scores[i+ ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+									score[i+ ind1+1,ind1+1,1] >= score[i+ind1+1,ind1+1,2])||
 								(seq.matrix[1,i] == seq.matrix[1,i+ind1] && 
-									scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+									score[i+ind1+1,ind1+1,1] <= score[i+ind1+1,ind1+1,2]))){
 									resolved[1,1] <- 1
 								}else{
 									resolved[1,1] <- 0
 								}
 								if(((seq.matrix[1,i]==seq.matrix[1,i-ind1] && 
-									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+									score[i-ind1+1,ind1+1,1]>=score[i-ind1+1,ind1+1,2])||
 								(seq.matrix[1,i] == seq.matrix[2,i-1] &&
-									scores[i-ind1+1,ind1+1,1] <= scores[i-ind1+1,ind1+1,2]))&&
+									score[i-ind1+1,ind1+1,1] <= score[i-ind1+1,ind1+1,2]))&&
 								((seq.matrix[2,i]==seq.matrix[2,i+ind1] && 
-									scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2])||
+									score[i+ind1+1,ind1+1,1]>=score[i+ind1+1,ind1+1,2])||
 								(seq.matrix[2,i]==seq.matrix[1,i+ind1] && 
-									scores[i+ind1+1,ind1+1,1]<=scores[i+ind1+1,ind1+1,2]))){
+									score[i+ind1+1,ind1+1,1]<=score[i+ind1+1,ind1+1,2]))){
 									resolved[1,2] <- 1
 								}else{
 									resolved[1,2] <- 0
@@ -156,13 +156,13 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 
 
 								if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+									score[i-ind2+1,ind2+1,1]>=score[i-ind2+1,ind2+1,2])||
 								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]<= scores[i-ind2+1,ind2+1,2]))&&
+									score[i-ind2+1,ind2+1,1]<= score[i-ind2+1,ind2+1,2]))&&
 								((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+									score[i+ind2+1,ind2+1,1]>=score[i+ind2+1,ind2+1,2])||
 								(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									score[i+ind2+1,ind2+1,1]<=score[i+ind2+1,ind2+1,2]))){
 									resolved[2,1] <- 1
 								}else{
 									resolved[2,1] <- 0
@@ -170,56 +170,56 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 
 
 								if(((seq.matrix[1,i]==seq.matrix[1,i-ind2] && 
-									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+									score[i-ind2+1,ind2+1,1]>=score[i-ind2+1,ind2+1,2])||
 								(seq.matrix[1,i]==seq.matrix[2,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]<=scores[i-ind2+1,ind2+1,2]))&&
+									score[i-ind2+1,ind2+1,1]<=score[i-ind2+1,ind2+1,2]))&&
 								((seq.matrix[2,i]==seq.matrix[2,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+									score[i+ind2+1,ind2+1,1]>=score[i+ind2+1,ind2+1,2])||
 								(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									score[i+ind2+1,ind2+1,1]<=score[i+ind2+1,ind2+1,2]))){
 									resolved[2,2] <- 1
 								}else{
 									resolved[2,2] <- 0
 								}
 								if((ind1 < ind2) &&
 									((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
-										scores[i-ind1+1,ind1+11,1]>=scores[i-ind1+1,ind1+1,2])||
+										score[i-ind1+1,ind1+1,1]>=score[i-ind1+1,ind1+1,2])||
 									(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&
-										scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))&&
+										score[i-ind1+1,ind1+1,1]<=score[i-ind1+1,ind1+1,2]))&&
 									((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&
-										scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+										score[i+ind2+1,ind2+1,1]>=score[i+ind2+1,ind2+1,2])||
 									(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&
-										scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+										score[i+ind2+1,ind2+1,1]<=score[i+ind2+1,ind2+1,2]))){
 									resolved[4,1] <- 1
 								}else{
 									resolved[4,1] <- 0
 								}
 								if((ind1<ind2)&&
 									((seq.matrix[1,i]==seq.matrix[1,i-ind1]&&
-										scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+										score[i-ind1+1,ind1+1,1]>=score[i-ind1+1,ind1+1,2])||
 									(seq.matrix[1,i]==seq.matrix[2,i-ind1]&&
-										scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))&&
+										score[i-ind1+1,ind1+1,1]<=score[i-ind1+1,ind1+1,2]))&&
 									((seq.matrix[2,i]==seq.matrix[2,i+ind2]&&
-										scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+										score[i+ind2+1,ind2+1,1]>=score[i+ind2+1,ind2+1,2])||
 									(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
-										scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+										score[i+ind2+1,ind2+1,1]<=score[i+ind2+1,ind2+1,2]))){
 									resolved[4,2] <- 1
 								}else{
 									resolved[4,1] <- 0
 								}
 							}else if(i<=ind1){
 								if(((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2])||
+									score[i+ind1+1,ind1+1,1]>=score[i+ind1+1,ind1+1,2])||
 								(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1]<=scores[i+ind1+1,ind1+1,2]))){
+									score[i+ind1+1,ind1+1,1]<=score[i+ind1+1,ind1+1,2]))){
 									resolved[1,1] <- 1
 								}else{
 									resolved[1,1] <- 0
 								}
 								if(((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2])||
+									score[i+ind1+1,ind1+1,1]>=score[i+ind1+1,ind1+1,2])||
 								(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1]<=scores[i+ind1+1,ind1+1,2]))){
+									score[i+ind1+1,ind1+1,1]<=score[i+ind1+1,ind1+1,2]))){
 									resolved[1,2] <- 1
 								}else{
 									resolved[1,2] <- 0
@@ -228,17 +228,17 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else if(seq.length-i< ind2){
 								resolved[1,] <- 0
 								if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+									score[i-ind2+1,ind2+1,1]>=score[i-ind2+1,ind2+1,2])||
 								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]<=scores[i.ind2+1,ind2+1,2]))){
+									score[i-ind2+1,ind2+1,1]<=score[i.ind2+1,ind2+1,2]))){
 									resolved[2,1] <- 1
 								}else{
 									resolved[2,1] <- 0
 								}
 								if(((seq.matrix[1,i]==seq.matrix[1,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+									score[i-ind2+1,ind2+1,1]>=score[i-ind2+1,ind2+1,2])||
 								(seq.matrix[1,i]==seq.matrix[2,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]<=scores[i-ind2+1,ind2+1,2]))){
+									score[i-ind2+1,ind2+1,1]<=score[i-ind2+1,ind2+1,2]))){
 									resolved[2,2] <- 1
 								}else{
 									resolved[2,2] <- 0
@@ -247,17 +247,17 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							if(phase.shift.matrix[2,i-z+1]<phase.shift.matrix[2,i+z+1]||i<=ind1){
 								
 								if(((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+									score[i+ind2+1,ind2+1,1]>=score[i+ind2+1,ind2+1,2])||
 								(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									score[i+ind2+1,ind2+1,1]<=score[i+ind2+1,ind2+1,2]))){
 									resolved[3,1] <- 1
 								}else{
 									resolved[3,1] <- 0
 								}
 								if(((seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+									score[i+ind2+1,ind2+1,1]>=score[i+ind2+1,ind2+1,2])||
 								(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
-									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									score[i+ind2+1,ind2+1,1]<=score[i+ind2+1,ind2+1,2]))){
 									resolved[3,2] <- 1
 								}else{
 									resolved[3,2] <- 0
@@ -265,17 +265,17 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else{
 
 								if(ind1==0||((seq.matrix[2,i]==seq.matrix[1,i-ind1]&&
-									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+									score[i-ind1+1,ind1+1,1]>=score[i-ind1+1,ind1+1,2])||
 								(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&
-									scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))){
+									score[i-ind1+1,ind1+1,1]<=score[i-ind1+1,ind1+1,2]))){
 									resolved[3,1] <- 1
 								}else{
 									resolved[3,1] <- 0
 								}
 								if(ind1==0||((seq.matrix[1,i]==seq.matrix[1,i-ind1]&&
-									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+									score[i-ind1+1,ind1+1,1]>=score[i-ind1+1,ind1+1,2])||
 								(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&
-									scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))){
+									score[i-ind1+1,ind1+1,1]<=score[i-ind1+1,ind1+1,2]))){
 									resolved[3,2] <- 1
 								}else{
 									resolved[3,2] <- 0
@@ -413,7 +413,6 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 										resolved[2,2] <- 0
 									}
 								}
-								######################################################
 							}else if(i<=ind1){
 									if(((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=2)||
 										(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
@@ -422,7 +421,7 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 										resolved[1,1] <- 0
 									}
 									if(((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1]!=2)||
-										(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]))){
+										(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
 										resolved[1,2] <- 1
 									}else{
 										resolved[1,2] <- 0
@@ -451,7 +450,6 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 						if(ind2==0){
 							resolved[2,] <- 0
 						}
-#############################################################################################
 						if(!is.longindel){
 							if(ind1>ind2){
 								if(phase.shift.matrix[2,i]==ind1){
@@ -526,21 +524,21 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else if(all(resolved[2,]==1)){
 							}else if(all(resolved[c(1,2),1]==1)&&all(resolved[c(1,2),2]==0)){
 								phase.shift.matrix[1,i+1] <- 1
-								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(all(resolved[c(1,2),1]==0)&&all(resolved[c(1,2),2]==1)){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}else if((resolved[1,1]==1&&resolved[2,2]==1)||(resolved[1,2]==1&&resolved[2,1]==1)){
 							}else if(all(resolved[c(1,3),1]==1)&&all(resolved[c(1,3),2]==0)){
 								phase.shift.matrix[1,i+1] <- 1
-								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(all(resolved[c(1,3),1]==0)&&all(resolved[c(1,3),2]==1)){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}else if(((resolved[1,1]==1&&resolved[3,2]==1)||(resolved[1,2]==1&&resolved[3,1]==1))
 								&&z< ind1 &&phase.shift.matrix[4,i+1]>ind1){
 							}else if(((resolved[2,1]==1&&resolved[3,2]==1)||(resolved[2,2]==1&&resolved[3,1]==1))
@@ -554,40 +552,40 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else if(xor(resolved[1,1]==1,resolved[1,2]==1)){
 								if(resolved[1,1]==1){
 									phase.shift.matrix[1,i+1] <- 1
-									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 								}else{
 									phase.shift.matrix[1,i+1] <- 2
-									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 								}
 							}else if(xor(resolved[2,1]==1,resolved[2,2]==1)){
 								if(resolved[2,1]==1){
 									phase.shift.matrix[1,i+1] <- 1
-									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 								}else{
 									phase.shift.matrix[1,i+1] <- 2
-									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 								}
 							}else if(all(resolved[3,]==1)&&all(resolved[4,]==0)){
 							}else if(all(resolved[3,]==1)&&all(resolved[4,]==c(1,0))){
 								phase.shift.matrix[1,i+1] <- 1
-								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(all(resolved[3,]==1)&&all(resolved[4,]==c(0,1))){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}else if(resolved[3,1]==1){
 								phase.shift.matrix[1,i+1] <- 1
-								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(resolved[3,2]==1){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}
 						}else{
 
@@ -601,41 +599,41 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else if(xor(resolved[1,1]==1,resolved[1,2]==1)){
 								if(resolved[1,1]==1){
 									phase.shift.matrix[1,i+1] <- 1
-									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 								}else{
 									phase.shift.matrix[1,i+1] <- 2
-									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 								}
 							}else if(xor(resolved[2,1]==1,resolved[2,2]==1)){
 								if(resolved[2,1]==1){
 									phase.shift.matrix[1,i+1] <- 1
-									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 								}else{
 									phase.shift.matrix[1,i+1] <- 2
-									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+									score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+									score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 								}
 							}else if(all(resolved[3,]==1)){
 							}else if(all(resolved[4,]==1)){
 							}else if(all(resolved[4,]==c(1,0))){
-								X4[1,i+1] <- 1
-								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								phase.shift.matrix[1,i+1] <- 1
+								score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(all(resolved[4,]==c(0,1))){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}else if(all(resolved[3,]==c(1,0))){
 								phase.shift.matrix[1,i+1] <- 1
-								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,1] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(all(resolved[3,]==c(0,1))){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind2+1,2] <- max(score[i+1,ind2+1,])+1 
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}
 						}
 					}else{
@@ -649,17 +647,17 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}
 							if(i<=ind1){
 								if(((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+									score[i+ind1+1,ind1+1,1] >= score[i+ind1+1,ind1+1,2])||
 								(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+									score[i+ind1+1,ind1+1,1] <= score[i+ind1+1,ind1+1,2]))){
 									resolved[1,1] <- 1
 								}else{
 									resolved[1,1] <- 0
 								}
 								if(((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&
-									scores[i+ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+									score[i+ind1+1,ind1+1,1] >= score[i+ind1+1,ind1+1,2])||
 								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
-									scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+									score[i+ind1+1,ind1+1,1] <= score[i+ind1+1,ind1+1,2]))){
 									resolved[1,2] <- 1
 								}else{
 									resolved[1,2] <- 0
@@ -667,17 +665,17 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else if(seq.length - i < ind1){
 								if(ind2 > 0){
 									if(((seq.matrix[2,i] == seq.matrix[1,i - ind1] &&
-										scores[i - ind1 + 1,ind1+1,1] >= scores[i - ind1 + 1,ind1+1,2])||
+										score[i - ind1 + 1,ind1+1,1] >= score[i - ind1 + 1,ind1+1,2])||
 									(seq.matrix[2,i] == seq.matrix[2,i - ind1] &&
-										scores[i - ind1 + 1,ind1+1,1] <= scores[i - ind1 + 1,ind1+1,2]))){
+										score[i - ind1 + 1,ind1+1,1] <= score[i - ind1 + 1,ind1+1,2]))){
 										resolved[1,1] <- 1
 									}else{
 										resolved[1,1] <- 0
 									}
 									if(((seq.matrix[1,i] == seq.matrix[1,i - ind1] &&
-										scores[i - ind1 + 1,ind1+1,1] >= scores[i - ind1 + 1,ind1+1,2]) ||
+										score[i - ind1 + 1,ind1+1,1] >= score[i - ind1 + 1,ind1+1,2]) ||
 									(seq.matrix[1,i] == seq.matrix[2,i - ind1] &&
-										scores[i - ind1 + 1,ind1+1,1] <= scores[i - ind1 + 1,ind1+1,2]))){
+										score[i - ind1 + 1,ind1+1,1] <= score[i - ind1 + 1,ind1+1,2]))){
 										resolved[1,2] <- 1
 									}else{
 										resolved[1,2] <- 0
@@ -703,25 +701,25 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}else{
 								if(ind2 > 0){
 									if(((seq.matrix[2,i] == seq.matrix[1,i-ind1] && 
-										scores[i-ind1+1,ind1+1,1] >= scores[i-ind1+1,ind1+1,2])||
+										score[i-ind1+1,ind1+1,1] >= score[i-ind1+1,ind1+1,2])||
 									(seq.matrix[2,i] == seq.matrix[2,i-ind1]&&
-										scores[i-ind1+1,ind1+1,1]<= scores[i-ind1+1,ind1+1,2])) &&
+										score[i-ind1+1,ind1+1,1]<= score[i-ind1+1,ind1+1,2])) &&
 									((seq.matrix[1,i] == seq.matrix[2,i+ind1] &&
-										scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2]) ||
+										score[i+ind1+1,ind1+1,1]>=score[i+ind1+1,ind1+1,2]) ||
 									(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&
-										scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+										score[i+ind1+1,ind1+1,1] <= score[i+ind1+1,ind1+1,2]))){
 										resolved[1,1] <- 1
 									}else{
 										resolved[1,1] <- 0
 									}
 									if(((seq.matrix[1,i] == seq.matrix[1,i-ind1] && 
-										scores[i-ind1+1,ind1+1,1] >= scores[i-ind1+1,ind1+1,2])||
+										score[i-ind1+1,ind1+1,1] >= score[i-ind1+1,ind1+1,2])||
 									(seq.matrix[1,i]==seq.matrix[2,i-ind1] && 
-										scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2])) &&
+										score[i-ind1+1,ind1+1,1]<=score[i-ind1+1,ind1+1,2])) &&
 									((seq.matrix[2,i]==seq.matrix[2,i+ind1] &&
-										scores[i+ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+										score[i+ind1+1,ind1+1,1] >= score[i+ind1+1,ind1+1,2])||
 									(seq.matrix[2,i]==seq.matrix[1,i+ind1] &&
-										scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+										score[i+ind1+1,ind1+1,1] <= score[i+ind1+1,ind1+1,2]))){
 										resolved[1,2] <- 1
 									}else{
 										resolved[1,2] <- 0
@@ -747,10 +745,10 @@ function(phase.shift.matrix, seq.matrix, scores, shift.score, max.shift, is.long
 							}
 							if(resolved[1,1] ==1 &&resolved[1,2] ==0){
 								phase.shift.matrix[1,i+1] <- 1
-								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind1+1,1] <- max(score[i+1,ind1+1,])+1
 							}else if(resolved[1,1] == 0 && resolved[1,2] ==1){
 								phase.shift.matrix[1,i+1] <- 2
-								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+								score[i+1,ind1+1,2] <- max(score[i+1,ind1+1,])+1
 							}
 						}
 					}
