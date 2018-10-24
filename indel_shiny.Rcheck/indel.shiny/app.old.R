@@ -15,7 +15,7 @@
 #source("indelForShiny.R")
 
 
-ui <- fluidPage(
+#ui <- fluidPage(
   
   titlePanel("Analyze Heterozygous Indels"),
   

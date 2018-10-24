@@ -1,0 +1,73 @@
+* using log directory ‘/home/robert/Dokumente/MPI/hetindel/indel_shiny.Rcheck’
+* using R version 3.5.1 (2018-07-02)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ‘indel_shiny/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘indel.shiny’ version ‘1.0’
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘indel.shiny’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+License components which are templates and need '+ file LICENSE':
+  MIT License
+Checking should be performed on sources prepared by ‘R CMD build’.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+files_fun: no visible global function definition for ‘unzip’
+mark.longindel: no visible binding for global variable ‘seq.length’
+mark.longindel: no visible binding for global variable ‘Scd’
+resolve.all: no visible binding for global variable ‘i.ind2’
+resolve.three.fold: no visible binding for global variable ‘seq.length’
+shinyAppServer: no visible global function definition for ‘zip’
+Undefined global functions or variables:
+  Scd i.ind2 seq.length unzip zip
+Consider adding
+  importFrom("utils", "unzip", "zip")
+to your NAMESPACE file.
+* checking Rd files ... NOTE
+prepare_Rd: indel.shiny-package.Rd:23-24: Dropping empty section \references
+prepare_Rd: indel.shiny-package.Rd:26-27: Dropping empty section \seealso
+prepare_Rd: start_indel_shiny.Rd:12-13: Dropping empty section \arguments
+prepare_Rd: start_indel_shiny.Rd:14-16: Dropping empty section \details
+prepare_Rd: start_indel_shiny.Rd:25-27: Dropping empty section \note
+prepare_Rd: start_indel_shiny.Rd:20-22: Dropping empty section \references
+prepare_Rd: start_indel_shiny.Rd:31-33: Dropping empty section \seealso
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘launchApp’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... OK
+* checking PDF version of manual ... OK
+* DONE
+Status: 1 WARNING, 3 NOTEs
