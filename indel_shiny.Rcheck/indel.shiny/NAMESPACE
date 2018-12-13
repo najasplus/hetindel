@@ -1,4 +1,5 @@
-export(launchApp)
+export(start_indel_shiny)
+export(calculate.indel)
 import(BiocGenerics)
 import(Biostrings)
 import(crayon)
