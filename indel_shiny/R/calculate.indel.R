@@ -1,5 +1,11 @@
+THRESHOLD <- 50
+
 calculate.indel <-
 function(sequence, max.shift=15){
+
+	if(max.shift > THRESHOLD){
+		max.shift <- THRESHOLD
+	}
 
 	temp <- seq.toMatrix(sequence, max.shift)
 	seq.matrix <- temp$matrix

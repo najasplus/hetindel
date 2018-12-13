@@ -305,30 +305,29 @@ if(!is.null(opt$input)){
 	stop("Please provide an input file or string.\n",call.=FALSE)
 }	
 
+#set variables
+max.shift <- opt$max
+penalty <- opt$penalty
+if(!is.null(opt$fix)){
+	fixed.shifts <- as.numeric(unlist(strsplit(opt$fix, split=",")))
+	}else{fixed.shifts <- NULL}
+is.right <- opt$right
+is.align <- opt$align
+is.longindel <- opt$long
 
+#convert sequence to all uppercase
+sequence <- toupper(sequence)
 
+seq.asvector=strsplit(sequence,"")[[1]]
 
+ambig <- 0
 
-seq.toMatrix <- function(sequence,max.shift){
-
-	#convert sequence to all uppercase
-	sequence <- toupper(sequence)
-
-	seq.asvector=strsplit(sequence,"")[[1]]
-	
-	#set sequence length
-	seq.length <- nchar(sequence)
-	
-	#maximum shift is limited to half of sequence length
-	if(max.shift*2>seq.length){
-		max.shift=floor(nchar(sequence)/2)
-	}
-
-	#initialize matric MX1
-	seq.matrix <- matrix(,nrow=2,ncol=seq.length)
-
-
-	if (seq.length!=0){ #if sequence exists
+seq.length <- nchar(sequence)
+#maximum shift is limited to half of sequence length
+if(max.shift*2>seq.length){
+	max.shift=floor(nchar(sequence)/2)
+}
+if (seq.length!=0){ #if sequence exists
 	
 
 	#set scores as in indelligent
@@ -336,6 +335,9 @@ seq.toMatrix <- function(sequence,max.shift){
 	mismatch.score=0
 	
 
+	#initialize matrix seq.matrix
+	seq.matrix <- matrix(,nrow=2,ncol=seq.length)
+	#fill seq.matrix
 	pos.of=seq.asvector=="R"
 	seq.matrix[1,pos.of]="A"
 	seq.matrix[2,pos.of]="G"
@@ -368,97 +370,25 @@ seq.toMatrix <- function(sequence,max.shift){
 
 
 	
-
-	return(list(matrix=seq.matrix,three.fold=bd,ambig=ambig1))
-}}
-
-
-
-
-#set variables
-max.shift <- opt$max
-penalty <- opt$penalty
-if(!is.null(opt$fix)){
-	fixed.shifts <- as.numeric(unlist(strsplit(opt$fix, split=",")))
-	}else{fixed.shifts <- NULL}
-is.right <- opt$right
-is.align <- opt$align
-is.longindel <- opt$long
-
-#convert sequence to all uppercase
-sequence <- toupper(sequence)
-
-seq.asvector=strsplit(sequence,"")[[1]]
-
-ambig <- 0
-
-seq.length <- nchar(sequence)
-#maximum shift is limited to half of sequence length
-if(max.shift*2>seq.length){
-	max.shift=floor(nchar(sequence)/2)
-}
-if (seq.length!=0){ #if sequence exists
-	
-
-	#set scores as in indelligent
-	match.score=1
-	mismatch.score=0
-	
-
-	#initialize matric MX1
-	MX1 <- matrix(,nrow=2,ncol=seq.length)
-	#fill MX1
-	pos.of=seq.asvector=="R"
-	MX1[1,pos.of]="A"
-	MX1[2,pos.of]="G"
-	pos.of=seq.asvector=="Y"
-	MX1[1,pos.of]="C"
-	MX1[2,pos.of]="T"
-	pos.of=seq.asvector=="S"
-	MX1[1,pos.of]="G"
-	MX1[2,pos.of]="C"
-	pos.of=seq.asvector=="W"
-	MX1[1,pos.of]="A"
-	MX1[2,pos.of]="T"
-	pos.of=seq.asvector=="M"
-	MX1[1,pos.of]="A"
-	MX1[2,pos.of]="C"
-	pos.of=seq.asvector=="K"
-	MX1[1,pos.of]="G"
-	MX1[2,pos.of]="T"
-	#fill remaining characters
-	pos.of=is.na(MX1[1,])
-	MX1[1,pos.of]=seq.asvector[pos.of]
-	MX1[2,pos.of]=seq.asvector[pos.of]
-	#check for 3-fold degenerate bases
-	if (!(MX1=="A" || MX1=="T" || MX1=="G" || MX1=="C")){
-		bd <- TRUE
-		ambig1 <- sum(!(MX1=="A" | MX1=="T" | MX1=="G" | MX1=="C"))
-	}else{
-		bd <- FALSE
-	}
-
-
-	
-#	print(MX1)
+#	print(seq.matrix)
 
 
 
 
 	#init calculation matrices
-	MX2 <- array(0,dim=c(seq.length+2,max.shift+1,2))
-	MX3 <- array(0,dim=c(seq.length+2,max.shift+1,2))
+	vorward.score <- array(0,dim=c(seq.length+2,max.shift+1,2))
+	scores <- array(0,dim=c(seq.length+2,max.shift+1,2))
 	
-	#init conditions for MX2 and MX3 (first 1 to max.shift+1 as the corresponding index 
-	#in MX2, last max.shift to seq.length+1 as falling cooresponding index e.g. 10 9 8 ... 0)
+	#init conditions for vorward.score and scores (first 1 to max.shift+1 as the corresponding index 
+	#in vorward.score, last max.shift to seq.length+1 as falling cooresponding index e.g. 10 9 8 ... 0)
 	for ( i in 2:(max.shift+1)){
-		MX2[i,i:(max.shift+1),] <- (i-1)
-		MX3[(seq.length-i+3),i:(max.shift+1),] <- (i-1)
+		vorward.score[i,i:(max.shift+1),] <- (i-1)
+		scores[(seq.length-i+3),i:(max.shift+1),] <- (i-1)
 	}
 		
-#	print(MX2)
-#	print(MX3)	
-	#calculate MX2 in forward direction
+#	print(vorward.score)
+#	print(scores)	
+	#calculate vorward.score in forward direction
 	for ( i in 1:seq.length){
 		jMax <- max.shift
 		if ((i-1) < max.shift){	#hier evtl fehler?
@@ -468,19 +398,19 @@ if (seq.length!=0){ #if sequence exists
 			for (z in 1:2){
 				SCMax <- -111111
 				for (x in 1:(jMax+1)){
-					if (j==1 && x==1 && MX1[1,i] != MX1[2,i]){
+					if (j==1 && x==1 && seq.matrix[1,i] != seq.matrix[2,i]){
 						
-						SC <- max(MX2[i,x,1],MX2[i,x,2]) - mismatch.score
-					}else if (j==1 && MX1[1,i]==MX1[2,i]){
-						SC <- max(MX2[i,x,1],MX2[i,x,2]) + match.score
+						SC <- max(vorward.score[i,x,1],vorward.score[i,x,2]) - mismatch.score
+					}else if (j==1 && seq.matrix[1,i]==seq.matrix[2,i]){
+						SC <- max(vorward.score[i,x,1],vorward.score[i,x,2]) + match.score
 					}else if (j != x){
-						SC <- max(MX2[i,x,1],MX2[i,x,2]) + match.score
-					}else if (((MX1[3-z,i]==MX1[1,i-(j-1)]) && 
-					(MX2[i-(j-2),j,1] >= MX2[i-(j-2),j,2])) || ((MX1[3-z,i]==MX1[2,i-(j-1)]) &&
-					( MX2[i-(j-2),j,1] <= MX2[i-(j-2),j,2]))){
-						SC  <- max(MX2[i,j,1],MX2[i,j,2])+match.score
+						SC <- max(vorward.score[i,x,1],vorward.score[i,x,2]) + match.score
+					}else if (((seq.matrix[3-z,i]==seq.matrix[1,i-(j-1)]) && 
+					(vorward.score[i-(j-2),j,1] >= vorward.score[i-(j-2),j,2])) || ((seq.matrix[3-z,i]==seq.matrix[2,i-(j-1)]) &&
+					( vorward.score[i-(j-2),j,1] <= vorward.score[i-(j-2),j,2]))){
+						SC  <- max(vorward.score[i,j,1],vorward.score[i,j,2])+match.score
 					} else {
-						SC  <-  max(MX2[i,j,1],MX2[i,j,2])- mismatch.score
+						SC  <-  max(vorward.score[i,j,1],vorward.score[i,j,2])- mismatch.score
 					}
 					if (x!=j){
 						SC <- SC - penalty - abs(x-j)
@@ -489,13 +419,13 @@ if (seq.length!=0){ #if sequence exists
 						SCMax  <-  SC
 					}
 				}
-				MX2[i+1,j,z]  <- SCMax
+				vorward.score[i+1,j,z]  <- SCMax
 			}
 		}
 	}
 
-#	print(MX2)
-	#calculate MX3 in reverse direction
+#	print(vorward.score)
+	#calculate scores in reverse direction
 	for (i in seq.length:1){
 		jMax <- max.shift
 		if((seq.length-i) < max.shift){
@@ -505,17 +435,17 @@ if (seq.length!=0){ #if sequence exists
 			for (z in 1:2){
 				SCMax <- -111111
 				for (x in 1:(jMax+1)){
-					if(j==1 && x == 1 && MX1[1,i] != MX1[2,i]){
-						SC <- max(MX3[i+2,x,1],MX3[i+2,x,2]) -mismatch.score
-					}else if(j==1 && MX1[1,i]==MX1[2,i]){
-						SC <- max(MX3[i+2,x,1],MX3[i+2,x,2])+match.score
+					if(j==1 && x == 1 && seq.matrix[1,i] != seq.matrix[2,i]){
+						SC <- max(scores[i+2,x,1],scores[i+2,x,2]) -mismatch.score
+					}else if(j==1 && seq.matrix[1,i]==seq.matrix[2,i]){
+						SC <- max(scores[i+2,x,1],scores[i+2,x,2])+match.score
 					}else if(j!=x){
-						SC=max(MX3[i+2,x,1],MX3[i+2,x,2]) + match.score
-					}else if(((MX1[z,i]==MX1[2,i+(j-1)]) && (MX3[i+j,j,1] >= MX3[i+j,j,2])) || 
-						((MX1[z,i]==MX1[1,i+(j-1)]) && (MX3[i+j,j,1] <=MX3[i+j,j,2]))){
-						SC <- max(MX3[i+2,j,1],MX3[i+2,j,2]) +match.score
+						SC=max(scores[i+2,x,1],scores[i+2,x,2]) + match.score
+					}else if(((seq.matrix[z,i]==seq.matrix[2,i+(j-1)]) && (scores[i+j,j,1] >= scores[i+j,j,2])) || 
+						((seq.matrix[z,i]==seq.matrix[1,i+(j-1)]) && (scores[i+j,j,1] <=scores[i+j,j,2]))){
+						SC <- max(scores[i+2,j,1],scores[i+2,j,2]) +match.score
 					}else{
-						SC <- max(MX3[i+2,j,1],MX3[i+2,j,2]) - mismatch.score
+						SC <- max(scores[i+2,j,1],scores[i+2,j,2]) - mismatch.score
 					}
 					if (x!=j){
 						SC <- SC-penalty-abs(x-j)
@@ -524,13 +454,13 @@ if (seq.length!=0){ #if sequence exists
 						SCMax <- SC
 					}
 				}
-				MX3[i+1,j,z]=SCMax
+				scores[i+1,j,z]=SCMax
 			}
 		}
 	}
-#	print(MX3)
-	#add MX2 and MX3 store result in MX3
-	MX3 <- MX2+MX3
+#	print(scores)
+	#add vorward.score and scores store result in scores
+	scores <- vorward.score+scores
 
 	
 	#make list of possible indels
@@ -540,12 +470,12 @@ if (seq.length!=0){ #if sequence exists
 		SCc <- 0
 		for (j in 0:max.shift){
 			if(is.null(fixed.shifts) || any(fixed.shifts==j)){
-				if (MX3[i,j+1,1]> SC){
-					SC <- MX3[i,j+1,1]
+				if (scores[i,j+1,1]> SC){
+					SC <- scores[i,j+1,1]
 					SCc <- j
 				}
-				if (MX3[i,j+1,2]>SC){
-					SC <- MX3[i,j+1,2]
+				if (scores[i,j+1,2]>SC){
+					SC <- scores[i,j+1,2]
 					SCc <- j
 				}
 			}
@@ -555,13 +485,13 @@ if (seq.length!=0){ #if sequence exists
 		}
 	}
 #	print(x)
-	#apply scores from MX3 and resolve positions in MX1. Results are stored in MX4.
-	#MX4[1,i] the value indicating which base from MX1 goes into the first string. 
-	#If MX4[1,i]==0 then the position is ambiguous.
-	#MX4[2,i] the value indicating the phase shift which resolves the position.
+	#apply scores from scores and resolve positions in seq.matrix. Results are stored in phase.shift.matrix.
+	#phase.shift.matrix[1,i] the value indicating which base from seq.matrix goes into the first string. 
+	#If phase.shift.matrix[1,i]==0 then the position is ambiguous.
+	#phase.shift.matrix[2,i] the value indicating the phase shift which resolves the position.
 
 	SCd <- 0
-	MX4 <- matrix(0,nrow=4,ncol=(seq.length+1))
+	phase.shift.matrix <- matrix(0,nrow=4,ncol=(seq.length+1))
 	repeat{
 		for(i in 1:seq.length){
 			SC <- -111111
@@ -572,40 +502,40 @@ if (seq.length!=0){ #if sequence exists
 			for(j in 0:max.shift){
 				if((is.null(fixed.shifts) && SCd==0) || (any(fixed.shifts==j) && SCd==0) || 
 					(any(x==j) && SCd==1)){
-					if(MX3[i+1,j+1,1] > SC){
-						SC <- MX3[i+1,j+1,1]
+					if(scores[i+1,j+1,1] > SC){
+						SC <- scores[i+1,j+1,1]
 						SCa <- 0
 						SCb <- 0
 						SCc <- j
 					}
-					if(MX3[i+1,j+1,2] > SC){
-						SC <- MX3[i+1,j+1,2]
+					if(scores[i+1,j+1,2] > SC){
+						SC <- scores[i+1,j+1,2]
 						SCa <- 0
 						SCb <- 0
 						SCc <- j
 					}
-					if(((MX3[i+1,j+1,1]==SC) || (MX3[i+1,j+1,2]==SC)) && (0+j)==MX4[2,i]){
+					if(((scores[i+1,j+1,1]==SC) || (scores[i+1,j+1,2]==SC)) && (0+j)==phase.shift.matrix[2,i]){
 						SCc <- j
 					}
-					if((MX3[i+1,j+1,1]==SC) && (any(x==j))){
+					if((scores[i+1,j+1,1]==SC) && (any(x==j))){
 						SCa <- 1
 					}
-					if((MX3[i+1,j+1,2]==SC) && (any(x==j))){
+					if((scores[i+1,j+1,2]==SC) && (any(x==j))){
 						SCb <- 1
 					}
 				}
 			}
 		
-			if(MX1[1,i]==MX1[2,i]){
-				MX4[1,i+1] <- 1
+			if(seq.matrix[1,i]==seq.matrix[2,i]){
+				phase.shift.matrix[1,i+1] <- 1
 			}else if (SCa==1 && SCb==0){
-				MX4[1,i+1] <- 1
+				phase.shift.matrix[1,i+1] <- 1
 			}else if (SCb==1 && SCa ==0){
-				MX4[1,i+1] <- 2
+				phase.shift.matrix[1,i+1] <- 2
 			}else{
-				MX4[1,i+1] <- 0
+				phase.shift.matrix[1,i+1] <- 0
 			}
-			MX4[2,i+1] <- SCc
+			phase.shift.matrix[2,i+1] <- SCc
 		}
 		#remove phase shifts recovered at the number of consecutive positions smaller 
 		#than the phase shift magnitude
@@ -615,35 +545,27 @@ if (seq.length!=0){ #if sequence exists
 		SCa <- 0
 
 		for(i in 1:seq.length){
-			if(MX4[2,i+1] != MX4[2,i]){
-				for(z in 1:MX4[2,i+1]){
+			if(phase.shift.matrix[2,i+1] != phase.shift.matrix[2,i]){
+				for(z in 1:phase.shift.matrix[2,i+1]){
 					if(i+z > seq.length){
 						break
 					}
-					if(MX4[2,i+z+1]!=MX4[2,i+1]){
+					if(phase.shift.matrix[2,i+z+1]!=phase.shift.matrix[2,i+1]){
 						SCa <- 1
 						break
 					}
-					if (z==MX4[2,i+1]){
+					if (z==phase.shift.matrix[2,i+1]){
 						z <- z+1
 					}
 				}
 			}
-			if(MX4[2,i+1] != MX4[2,2]){
+			if(phase.shift.matrix[2,i+1] != phase.shift.matrix[2,2]){
 				SCc <- 1
 			}
-			if(z>MX4[2,i+1] && !any(u==MX4[2,i+1])){
-				u <- c(u,MX4[2,i+1])
+			if(z>phase.shift.matrix[2,i+1] && !any(u==phase.shift.matrix[2,i+1])){
+				u <- c(u,phase.shift.matrix[2,i+1])
 			}
 		}
-
-
-
-#		print(u)
-#		print(x)
-
-
-
 		if(u != x && SCd==0){
 			   SCa <- 1
 		}
@@ -651,165 +573,166 @@ if (seq.length!=0){ #if sequence exists
 		if(SCa==1 || SCd==1){
 			SCd <- SCd+1
 		}
-		if(SCd!=1){		#recalculate MX4 if short indel was removed
+		if(SCd!=1){		#recalculate phase.shift.matrix if short indel was removed
 			break
 		}
 	}
-	#print(MX4)
+	#print(phase.shift.matrix)
 
 	#resolve the remaining ambiguities.
-	#MX5 is used to determine the possibility of resolving an ambiguous position with the 
+	#resolved is used to determine the possibility of resolving an ambiguous position with the 
 	#same phase shift as the preceding positions or with the same shift as 
 	#the following positions
-	MX5 <- matrix(0,nrow=4,ncol=2)
+	resolved <- matrix(,nrow=4,ncol=2)
 
 	#mark and rotate positions for long indels 
 	if (is.longindel){
-		SCa = MX4[2,2]
+		SCa = phase.shift.matrix[2,2]
 		for(i in 1:seq.length){
-			if(MX4[2,i+1]>SCa){
+			if(phase.shift.matrix[2,i+1]>SCa){
 				for(j in 0:(SCa-1)){
-					MX4[2,i+j+1] <- SCa
-					MX4[1,i+j+1] <- 0
+					phase.shift.matrix[2,i+j+1] <- SCa
+					phase.shift.matrix[1,i+j+1] <- 0
 				}
 				i <- i+SCa
-				SCa <- MX4[2,i+1]
-			}else if(MX4[2,i+1]<SCa){
-				SCa <- MX4[2,i+1]
+				SCa <- phase.shift.matrix[2,i+1]
+			}else if(phase.shift.matrix[2,i+1]<SCa){
+				SCa <- phase.shift.matrix[2,i+1]
 				for(j in 1:SCa){
-					MX4[1,i-j+1] <- 0
-					MX4[2,i-j+1] <- SCa
+					phase.shift.matrix[1,i-j+1] <- 0
+					phase.shift.matrix[2,i-j+1] <- SCa
 				}
 			}
 		}
-		SCa <- MX4[2,2]
+		SCa <- phase.shift.matrix[2,2]
 		SCd <- 0
 		for(i in 1:seq.length){
-			if(MX4[2,i+1] != SCa){
-				for(j in max(1,i-9):min(seq.length,i+11)){
-					if(MX3[j,SCa+1,2]==MX3[j,MX4[2,i+1]+1,2] && MX3[j,SCa+1,2] >= MX3[j,SCa+1,1] && 
-						MX3[j,MX4[2,i+1]+1,2]>= MX3[j,MX4[2,i+1]+1,1]){
-						MX4[1,j+1] <- 0
-					}else if(MX3[j,SCa+1,1] == MX3[j,MX4[2,i+1]+1,1] && 
-						MX3[j,SCa+1,2] <= MX3[j,SCa+1,1] && 
-						MX3[j,MX4[2,i+1]+1,2] <=MX3[j,MX4[2,i+1]+1,1]){
-						MX4[1,j] <- 0
+			if(phase.shift.matrix[2,i+1] != SCa){
+				for(j in max(1,i-10):min(seq.length,i+10)){
+					if(scores[j,SCa,2]==scores[j,phase.shift.matrix[2,i+1],2] && scores[j,SCa,2] >= scores[j,SCa,1] && 
+						scores[j,phase.shift.matrix[2,i+1],2]>= scores[j,phase.shift.matrix[2,i+1],1]){
+						phase.shift.matrix[1,j+1] <- 0
+					}else if(scores[j,SCa,1] == scores[j,phase.shift.matrix[2,i+1],1] && 
+						scores[j,SCa,2] <= scores[j,SCa,1] && 
+						scores[j,phase.shift.matrix[2,i+1],2] <=scores[j,phase.shift.matrix[2,i+1],1]){
+						phase.shift.matrix[1,j] <- 0
 					}
-					if(MX1[1,j] == MX1[2,j]){
-						MX4[1,j+1] <- 1
+					if(seq.matrix[1,j] == seq.matrix[2,j]){
+						phase.shift.matrix[1,j+1] <- 1
 					}
 				}
 				if(SCa != 0){
 					SCd <- abs(SCd-1)
 				}
-				SCa <- MX4[2,i+1]
+				SCa <- phase.shift.matrix[2,i+1]
 			}
 			if(SCd==1){
-				MX4[2,i+1] <- -MX4[2,i+1]
-				if(MX4[1,i+1] >0 && MX1[1,i] != MX1[2,i]){
-					MX4[1,i+1]  <-  3-MX4[1,i+1]
+				phase.shift.matrix[2,i+1] <- -phase.shift.matrix[2,i+1]
+				if(phase.shift.matrix[1,i+1] >0 && seq.matrix[1,i] != seq.matrix[2,i]){
+					phase.shift.matrix[1,i+1]  <-  3-phase.shift.matrix[1,i+1]
 				}
 			}
 		}
 	}
-	
+
+
 	if(SCc==1){
 		repeat{
-			MX4 <- alignLeft(MX4,seq.length,MX1)$matr
-			MX4 <- alignRight(MX4,seq.length,MX1)$matr
+			phase.shift.matrix <- alignLeft(phase.shift.matrix,seq.length,seq.matrix)$matr
+			phase.shift.matrix <- alignRight(phase.shift.matrix,seq.length,seq.matrix)$matr
 
-			#print(MX4)
+			#print(phase.shift.matrix)
 			#calculate and mark the ambiguities that could potentially be resolved
 
 
 
 
 			for(i in 1:seq.length){
-				if(MX4[1, i+1]==0){
-					j <- abs(MX4[2,i+1])
+				if(phase.shift.matrix[1, i+1]==0){
+					j <- abs(phase.shift.matrix[2,i+1])
 
 
 					#print(j*SCc+i+1)
 					#print(i)
 					if(i<=j){
-						MX4[3,i+1] <- 1	#1 could be resolved, 0- cannot be resolved
+						phase.shift.matrix[3,i+1] <- 1	#1 could be resolved, 0- cannot be resolved
 					}else if(j==0){
-						MX4[3,i+1] <- 1
-					}else if(MX4[3,i-j+1] == 0 && abs(MX4[2,i-j+1])==j && MX4[1,i-j+1]==0){
-						MX4[3,i+1] <- 0
-					}else if(MX4[3,i-j+1]==1 && abs(MX4[2,i-j+1])==j && MX4[1,i-j+1]==0){
-						MX4[3,i+1] <- 1
+						phase.shift.matrix[3,i+1] <- 1
+					}else if(phase.shift.matrix[3,i-j+1] == 0 && abs(phase.shift.matrix[2,i-j+1])==j && phase.shift.matrix[1,i-j+1]==0){
+						phase.shift.matrix[3,i+1] <- 0
+					}else if(phase.shift.matrix[3,i-j+1]==1 && abs(phase.shift.matrix[2,i-j+1])==j && phase.shift.matrix[1,i-j+1]==0){
+						phase.shift.matrix[3,i+1] <- 1
 					}else if(j*SCc+i+1 <=seq.length){
 						SCc <- 1
-						while(MX4[1,j*SCc+i+1]==0 && abs(MX4[2,j*SCc+1+i])==j && 
+						while(phase.shift.matrix[1,j*SCc+i+1]==0 && abs(phase.shift.matrix[2,j*SCc+1+i])==j && 
 							j*SCc+i+1<=seq.length){
 							SCc <- SCc+1
 						}
-						#cat("erste Stelle",3-MX4[1,j*SCc+i+1],"\n")
+						#cat("erste Stelle",3-phase.shift.matrix[1,j*SCc+i+1],"\n")
 						#cat("zweite Stelle",j*SCc+i,"\n")
-						#cat("Wert",MX1[3-MX4[1,j*SCc+i+1],j*SCc+i],"\n")
+						#cat("Wert",seq.matrix[3-phase.shift.matrix[1,j*SCc+i+1],j*SCc+i],"\n")
 
 
-						if(abs(MX4[2,i-j+1]) < j && MX4[2,i+1] >0){
-							MX4[3,i+1] <- 1
+						if(abs(phase.shift.matrix[2,i-j+1]) < j && phase.shift.matrix[2,i+1] >0){
+							phase.shift.matrix[3,i+1] <- 1
 						}else if((j*SCc +i) > seq.length){ # evtl +1
-							MX4[3, i+1] <- 1
-						}else if(abs(MX4[2,j*SCc+i+1]) != j){
-							MX4[3,i+1] <- 1
-						}else if(abs(MX4[2,j*SCc+i+1+MX4[4,i+1]]) != j){
-							MX4[3,i+1] <- 1
+							phase.shift.matrix[3, i+1] <- 1
+						}else if(abs(phase.shift.matrix[2,j*SCc+i+1]) != j){
+							phase.shift.matrix[3,i+1] <- 1
+						}else if(abs(phase.shift.matrix[2,j*SCc+i+1+phase.shift.matrix[4,i+1]]) != j){
+							phase.shift.matrix[3,i+1] <- 1
 
 
-						}else if(MX4[1,i-j+1]>0 && (3-MX4[1,j*SCc+i+1]<3 )&& 
-							(3-MX4[1,j*SCc+i+1])>0){
+						}else if(phase.shift.matrix[1,i-j+1]>0 && (3-phase.shift.matrix[1,j*SCc+i+1]<3 )&& 
+							(3-phase.shift.matrix[1,j*SCc+i+1])>0){
 
-							if((MX4[2,i+1] > 0) && ((SCc / 2 ) != floor(SCc/2)) && 
-							((MX1[MX4[1,i-j+1],i-j] == MX1[2,i] && 
-									MX1[1,i] == MX1[3-MX4[1,j*SCc+i+1],j*SCc+i]) || 
-								(MX1[MX4[1,i-j+1],i-j]==MX1[1,i] && 
-									MX1[2,i]==MX1[3-MX4[1,j*SCc+i+1],j*SCc+i]))){
+							if((phase.shift.matrix[2,i+1] > 0) && ((SCc / 2 ) != floor(SCc/2)) && 
+							((seq.matrix[phase.shift.matrix[1,i-j+1],i-j] == seq.matrix[2,i] && 
+									seq.matrix[1,i] == seq.matrix[3-phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]) || 
+								(seq.matrix[phase.shift.matrix[1,i-j+1],i-j]==seq.matrix[1,i] && 
+									seq.matrix[2,i]==seq.matrix[3-phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]))){
 								
 
-								MX4[3,i+1] <- 1
+								phase.shift.matrix[3,i+1] <- 1
 							}
-						}else if(MX4[1,i-j+1]!=0 && (3-MX4[1,j*SCc+i+1])<3 && 
-							3-MX4[1,j*SCc+i+1]>0){
+						}else if(phase.shift.matrix[1,i-j+1]!=0 && (3-phase.shift.matrix[1,j*SCc+i+1])<3 && 
+							3-phase.shift.matrix[1,j*SCc+i+1]>0){
 
-							if(MX4[2,i+1] >0 && (SCc/2) == floor(SCc/2) && 
-								((MX1[MX4[1,i-j+1],i-j]==MX1[1,i] && 
-									MX1[2,i] == MX1[3-MX4[1,j*SCc+i+1],j*SCc+i])||
-								(MX1[MX4[1,i-j+1],i-j] == MX1[1,i] && 
-									MX1[1,i] == MX1[3- MX4[1,j*SCc+i+1],j*SCc+i]))){
-								MX4[3,i+1] <- 1
+							if(phase.shift.matrix[2,i+1] >0 && (SCc/2) == floor(SCc/2) && 
+								((seq.matrix[phase.shift.matrix[1,i-j+1],i-j]==seq.matrix[1,i] && 
+									seq.matrix[2,i] == seq.matrix[3-phase.shift.matrix[1,j*SCc+i+1],j*SCc+i])||
+								(seq.matrix[phase.shift.matrix[1,i-j+1],i-j] == seq.matrix[1,i] && 
+									seq.matrix[1,i] == seq.matrix[3- phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]))){
+								phase.shift.matrix[3,i+1] <- 1
 							}
-						}else if(abs(MX4[2,i-j+1]) != j && MX4[2,i+1] < 0){
-							MX4[3,i+1] <- 1
-						}else if(MX4[1,i-j+1] ==0){
-							MX4[3,i+1] <- 0
-						}else if(MX4[1,i-j+1]!=0 && (3-MX4[1,j*SCc+i+1])<3 && 
-							3-MX4[1,j*SCc+i+1]>0){
+						}else if(abs(phase.shift.matrix[2,i-j+1]) != j && phase.shift.matrix[2,i+1] < 0){
+							phase.shift.matrix[3,i+1] <- 1
+						}else if(phase.shift.matrix[1,i-j+1] ==0){
+							phase.shift.matrix[3,i+1] <- 0
+						}else if(phase.shift.matrix[1,i-j+1]!=0 && (3-phase.shift.matrix[1,j*SCc+i+1])<3 && 
+							3-phase.shift.matrix[1,j*SCc+i+1]>0){
 
-							if(MX4[2,i+1] < 0 && (SCc/2) != floor(SCc/2) && 
-								((MX1[3-MX4[1,i-j+1],i-j] == MX1[1,i] && 
-									MX1[2,i]== MX1[MX4[1,j*SCc+i+1],j*SCc+i]) || 
-								(MX1[3-MX4[1,i-j+1],i-j] == MX1[2,i] && 
-									MX1[1,i]==MX1[MX4[1,j*SCc+i+1],j*SCc+i]))){
-								MX4[3,i+1] <- 1
+							if(phase.shift.matrix[2,i+1] < 0 && (SCc/2) != floor(SCc/2) && 
+								((seq.matrix[3-phase.shift.matrix[1,i-j+1],i-j] == seq.matrix[1,i] && 
+									seq.matrix[2,i]== seq.matrix[phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]) || 
+								(seq.matrix[3-phase.shift.matrix[1,i-j+1],i-j] == seq.matrix[2,i] && 
+									seq.matrix[1,i]==seq.matrix[phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]))){
+								phase.shift.matrix[3,i+1] <- 1
 
 						}
-						}else if(MX4[1,i-j+1]!=0 && (3-MX4[1,j*SCc+i+1])<3 && 
-							3-MX4[1,j*SCc+i+1]>0){
+						}else if(phase.shift.matrix[1,i-j+1]!=0 && (3-phase.shift.matrix[1,j*SCc+i+1])<3 && 
+							3-phase.shift.matrix[1,j*SCc+i+1]>0){
 
-							if(MX4[2,i+1] < 0 && (SCc/2) == floor(SCc/2) && 
-								(( MX1[3-MX4[1,i-j+1],i-j]==MX1[1,i-j] && 
-									MX1[1,i] == MX1[MX4[1,j*SCc+i+1],j*SCc+i]) || 
-								(MX1[3-MX4[1,i-j+1],i-j] == MX1[2,i] &&
-									MX1[2,i]==MX1[MX4[1,j*SCc+i+1],j*SCc+i]))){
-								MX4[3,i+1] <- 1
+							if(phase.shift.matrix[2,i+1] < 0 && (SCc/2) == floor(SCc/2) && 
+								(( seq.matrix[3-phase.shift.matrix[1,i-j+1],i-j]==seq.matrix[1,i-j] && 
+									seq.matrix[1,i] == seq.matrix[phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]) || 
+								(seq.matrix[3-phase.shift.matrix[1,i-j+1],i-j] == seq.matrix[2,i] &&
+									seq.matrix[2,i]==seq.matrix[phase.shift.matrix[1,j*SCc+i+1],j*SCc+i]))){
+								phase.shift.matrix[3,i+1] <- 1
 							}
 						}else{
 
-							MX4[3,i+1] <- 0
+							phase.shift.matrix[3,i+1] <- 0
 						}
 					}
 				}
@@ -820,648 +743,648 @@ if (seq.length!=0){ #if sequence exists
 			for(i in 1:seq.length){
 				
 
-				if(MX4[1,i+1]==0 && MX4[3,i+1]==1){
+				if(phase.shift.matrix[1,i+1]==0 && phase.shift.matrix[3,i+1]==1){
 
-					for(z in 1:(max.shift+MX4[4,1])){
+					for(z in 1:(max.shift+phase.shift.matrix[4,1])){
 						if(z>=i || z> seq.length -i){
 							break
 						}
-						if(MX4[2,i-z+1] != MX4[2,i+z+1]){
+						if(phase.shift.matrix[2,i-z+1] != phase.shift.matrix[2,i+z+1]){
 							break
 						}
 					}
 
-					if(z<=i && z-MX4[3,i+1] <= max.shift+1 && z <= seq.length -(i+1)){
+					if(z<=i && z-phase.shift.matrix[3,i+1] <= max.shift+1 && z <= seq.length -(i+1)){
 
-						ind1 <- abs(MX4[2,i-z+1])
-						ind2 <- abs(MX4[2,i+z+1])
+						ind1 <- abs(phase.shift.matrix[2,i-z+1])
+						ind2 <- abs(phase.shift.matrix[2,i+z+1])
 						if(!is.longindel){
 							if((i> ind1) && (i>ind2) && (seq.length -i)>ind1 && 
 								(seq.length-i)>ind2){
-								if(((MX1[2,i]==MX1[1,i-ind1] && 
-									MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2]) || 
-								(MX1[2,i] == MX1[2,i-ind1] && 
-									MX3[i-ind1+1,ind1+1,1] <= MX3[i-ind1+1,ind1+1,2])) && 
-								((MX1[1,i] == MX1[2,i+ind1] && 
-									MX3[i+ ind1+1,ind1+1,1] >= MX3[i+ind1+1,ind1+1,2])||
-								(MX1[1,i] == MX1[1,i+ind1] && 
-									MX3[i+ind1+1,ind1+1,1] <= MX3[i+ind1+1,ind1+1,2]))){
-									MX5[1,1] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[1,i-ind1] && 
+									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2]) || 
+								(seq.matrix[2,i] == seq.matrix[2,i-ind1] && 
+									scores[i-ind1+1,ind1+1,1] <= scores[i-ind1+1,ind1+1,2])) && 
+								((seq.matrix[1,i] == seq.matrix[2,i+ind1] && 
+									scores[i+ ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+								(seq.matrix[1,i] == seq.matrix[1,i+ind1] && 
+									scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+									resolved[1,1] <- 1
 								}else{
-									MX5[1,1] <- 0
+									resolved[1,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i-ind1] && 
-									MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2])||
-								(MX1[1,i] == MX1[2,i-1] &&
-									MX3[i-ind1+1,ind1+1,1] <= MX3[i-ind1+1,ind1+1,2]))&&
-								((MX1[2,i]==MX1[2,i+ind1] && 
-									MX3[i+ind1+1,ind1+1,1]>=MX3[i+ind1+1,ind1+1,2])||
-								(MX1[2,i]==MX1[1,i+ind1] && 
-									MX3[i+ind1+1,ind1+1,1]<=MX3[i+ind1+1,ind1+1,2]))){
-									MX5[1,2] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[1,i-ind1] && 
+									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+								(seq.matrix[1,i] == seq.matrix[2,i-1] &&
+									scores[i-ind1+1,ind1+1,1] <= scores[i-ind1+1,ind1+1,2]))&&
+								((seq.matrix[2,i]==seq.matrix[2,i+ind1] && 
+									scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2])||
+								(seq.matrix[2,i]==seq.matrix[1,i+ind1] && 
+									scores[i+ind1+1,ind1+1,1]<=scores[i+ind1+1,ind1+1,2]))){
+									resolved[1,2] <- 1
 								}else{
-									MX5[1,2] <- 0
-								}
-
-
-								if(((MX1[2,i]==MX1[1,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]>=MX3[i-ind2+1,ind2+1,2])||
-								(MX1[2,i]==MX1[2,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]<= MX3[i-ind2+1,ind2+1,2]))&&
-								((MX1[1,i]==MX1[2,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]>=MX3[i+ind2+1,ind2+1,2])||
-								(MX1[1,i]==MX1[1,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]<=MX3[i+ind2+1,ind2+1,2]))){
-									MX5[2,1] <- 1
-								}else{
-									MX5[2,1] <- 0
+									resolved[1,2] <- 0
 								}
 
 
-								if(((MX1[1,i]==MX1[1,i-ind2] && 
-									MX3[i-ind2+1,ind2+1,1]>=MX3[i-ind2+1,ind2+1,2])||
-								(MX1[1,i]==MX1[2,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]<=MX3[i-ind2+1,ind2+1,2]))&&
-								((MX1[2,i]==MX1[2,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]>=MX3[i+ind2+1,ind2+1,2])||
-								(MX1[2,i]==MX1[1,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]<=MX3[i+ind2+1,ind2+1,2]))){
-									MX5[2,2] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]<= scores[i-ind2+1,ind2+1,2]))&&
+								((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+								(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									resolved[2,1] <- 1
 								}else{
-									MX5[2,2] <- 0
+									resolved[2,1] <- 0
+								}
+
+
+								if(((seq.matrix[1,i]==seq.matrix[1,i-ind2] && 
+									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+								(seq.matrix[1,i]==seq.matrix[2,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]<=scores[i-ind2+1,ind2+1,2]))&&
+								((seq.matrix[2,i]==seq.matrix[2,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+								(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									resolved[2,2] <- 1
+								}else{
+									resolved[2,2] <- 0
 								}
 								if((ind1 < ind2) &&
-									((MX1[2,i]==MX1[1,i-ind2]&&
-										MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2])||
-									(MX1[2,i]==MX1[2,i-ind1]&&
-										MX3[i-ind1+1,ind1+1,1]<=MX3[i-ind1+1,ind1+1,2]))&&
-									((MX1[1,i]==MX1[2,i+ind2]&&
-										MX3[i+ind2+1,ind2+1,1]>=MX3[i+ind2+1,ind2+1,2])||
-									(MX1[1,i]==MX1[1,i+ind2]&&
-										MX3[i+ind2+1,ind2+1,1]<=MX3[i+ind2+1,ind2+1,2]))){
-									MX5[4,1] <- 1
+									((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
+										scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+									(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&
+										scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))&&
+									((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&
+										scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+									(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&
+										scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									resolved[4,1] <- 1
 								}else{
-									MX5[4,1] <- 0
+									resolved[4,1] <- 0
 								}
 								if((ind1<ind2)&&
-									((MX1[1,i]==MX1[1,i-ind1]&&
-										MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2])||
-									(MX1[1,i]==MX1[2,i-ind1]&&
-										MX3[i-ind1+1,ind1+1,1]<=MX3[i-ind1+1,ind1+1,2]))&&
-									((MX1[2,i]==MX1[2,i+ind2]&&
-										MX3[i+ind2+1,ind2+1,1]>=MX3[i+ind2+1,ind2+1,2])||
-									(MX1[2,i]==MX1[1,i+ind2]&&
-										MX3[i+ind2+1,ind2+1,1]<=MX3[i+ind2+1,ind2+1,2]))){
-									MX5[4,2] <- 1
+									((seq.matrix[1,i]==seq.matrix[1,i-ind1]&&
+										scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+									(seq.matrix[1,i]==seq.matrix[2,i-ind1]&&
+										scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))&&
+									((seq.matrix[2,i]==seq.matrix[2,i+ind2]&&
+										scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+									(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
+										scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									resolved[4,2] <- 1
 								}else{
-									MX5[4,1] <- 0
+									resolved[4,1] <- 0
 								}
 							}else if(i<=ind1){
-								if(((MX1[1,i]==MX1[2,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1]>=MX3[i+ind1+1,ind1+1,2])||
-								(MX1[1,i]==MX1[1,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1]<=MX3[i+ind1+1,ind1+1,2]))){
-									MX5[1,1] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2])||
+								(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1]<=scores[i+ind1+1,ind1+1,2]))){
+									resolved[1,1] <- 1
 								}else{
-									MX5[1,1] <- 0
+									resolved[1,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1]>=MX3[i+ind1+1,ind1+1,2])||
-								(MX1[2,i]==MX1[1,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1]<=MX3[i+ind1+1,ind1+1,2]))){
-									MX5[1,2] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2])||
+								(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1]<=scores[i+ind1+1,ind1+1,2]))){
+									resolved[1,2] <- 1
 								}else{
-									MX5[1,2] <- 0
+									resolved[1,2] <- 0
 								}
-								MX5[2,] <- 0
+								resolved[2,] <- 0
 							}else if(seq.length-i< ind2){
-								MX5[1,] <- 0
-								if(((MX1[2,i]==MX1[1,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]>=MX3[i-ind2+1,ind2+1,2])||
-								(MX1[2,i]==MX1[2,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]<=MX3[i.ind2+1,ind2+1,2]))){
-									MX5[2,1] <- 1
+								resolved[1,] <- 0
+								if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]<=scores[i.ind2+1,ind2+1,2]))){
+									resolved[2,1] <- 1
 								}else{
-									MX5[2,1] <- 0
+									resolved[2,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]>=MX3[i-ind2+1,ind2+1,2])||
-								(MX1[1,i]==MX1[2,i-ind2]&&
-									MX3[i-ind2+1,ind2+1,1]<=MX3[i-ind2+1,ind2+1,2]))){
-									MX5[2,2] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[1,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
+								(seq.matrix[1,i]==seq.matrix[2,i-ind2]&&
+									scores[i-ind2+1,ind2+1,1]<=scores[i-ind2+1,ind2+1,2]))){
+									resolved[2,2] <- 1
 								}else{
-									MX5[2,2] <- 0
+									resolved[2,2] <- 0
 								}
 							}							
-							if(MX4[2,i-z+1]<MX4[2,i+z+1]||i<=ind1){
+							if(phase.shift.matrix[2,i-z+1]<phase.shift.matrix[2,i+z+1]||i<=ind1){
 								
-								if(((MX1[1,i]==MX1[2,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]>=MX3[i+ind2+1,ind2+1,2])||
-								(MX1[1,i]==MX1[1,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]<=MX3[i+ind2+1,ind2+1,2]))){
-									MX5[3,1] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+								(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									resolved[3,1] <- 1
 								}else{
-									MX5[3,1] <- 0
+									resolved[3,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[1,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]>=MX3[i+ind2+1,ind2+1,2])||
-								(MX1[2,i]==MX1[1,i+ind2]&&
-									MX3[i+ind2+1,ind2+1,1]<=MX3[i+ind2+1,ind2+1,2]))){
-									MX5[3,2] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]>=scores[i+ind2+1,ind2+1,2])||
+								(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&
+									scores[i+ind2+1,ind2+1,1]<=scores[i+ind2+1,ind2+1,2]))){
+									resolved[3,2] <- 1
 								}else{
-									MX5[3,2] <- 0
+									resolved[3,2] <- 0
 								}
 							}else{
 
-								if(ind1==0||((MX1[2,i]==MX1[1,i-ind1]&&
-									MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2])||
-								(MX1[2,i]==MX1[2,i-ind1]&&
-									MX3[i-ind1+1,ind1+1,1]<=MX3[i-ind1+1,ind1+1,2]))){
-									MX5[3,1] <- 1
+								if(ind1==0||((seq.matrix[2,i]==seq.matrix[1,i-ind1]&&
+									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+								(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&
+									scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))){
+									resolved[3,1] <- 1
 								}else{
-									MX5[3,1] <- 0
+									resolved[3,1] <- 0
 								}
-								if(ind1==0||((MX1[1,i]==MX1[1,i-ind1]&&
-									MX3[i-ind1+1,ind1+1,1]>=MX3[i-ind1+1,ind1+1,2])||
-								(MX1[2,i]==MX1[2,i-ind1]&&
-									MX3[i-ind1+1,ind1+1,1]<=MX3[i-ind1+1,ind1+1,2]))){
-									MX5[3,2] <- 1
+								if(ind1==0||((seq.matrix[1,i]==seq.matrix[1,i-ind1]&&
+									scores[i-ind1+1,ind1+1,1]>=scores[i-ind1+1,ind1+1,2])||
+								(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&
+									scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2]))){
+									resolved[3,2] <- 1
 								}else{
-									MX5[3,2] <- 0
+									resolved[3,2] <- 0
 								}
 							}
 							if(ind1==0||ind2==0){
-								MX5[4,] <- 0
+								resolved[4,] <- 0
 							}	
 
 						}else{  #long indel
-							if(MX4[2,i-z+1]>0){
-								if(((MX1[2,i]==MX1[1,i-ind1]&&
-									MX4[1,i-ind1+1] !=2)||
-								(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind1+1]!=1))){
-									MX5[3,1] <- 1
+							if(phase.shift.matrix[2,i-z+1]>0){
+								if(((seq.matrix[2,i]==seq.matrix[1,i-ind1]&&
+									phase.shift.matrix[1,i-ind1+1] !=2)||
+								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind1+1]!=1))){
+									resolved[3,1] <- 1
 								}else{
-									MX5[3,1] <- 0
+									resolved[3,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||
-									(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))){
-									MX5[3,2] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=2)||
+									(seq.matrix[1,i]==seq.matrix[2,i-ind1]&&phase.shift.matrix[1,i-ind1]!=1))){
+									resolved[3,2] <- 1
 								}else{
-									MX5[3,2] <- 0
+									resolved[3,2] <- 0
 								}
 							}else{
-								if(((MX1[1,i]==MX1[2,i-ind1] && MX4[1,i-ind1+1]!=2)||
-									(MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))){
-									MX5[4,1] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[2,i-ind1] && phase.shift.matrix[1,i-ind1+1]!=2)||
+									(seq.matrix[1,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=1))){
+									resolved[4,1] <- 1
 								}else{
-									MX5[4,1] <- 0
+									resolved[4,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=2)||
-									(MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))){
-									MX5[4,2] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[2,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=2)||
+									(seq.matrix[2,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=1))){
+									resolved[4,2] <- 1
 								}else{
-									MX5[4,2] <- 0
+									resolved[4,2] <- 0
 								}
 							}
-							if(MX4[2,i+z+1]>0){
-								if(((MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-									(MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+2]!=1))){
-									MX5[4,1] <- 1
+							if(phase.shift.matrix[2,i+z+1]>0){
+								if(((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+									(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+2]!=1))){
+									resolved[4,1] <- 1
 								}else{
-									MX5[4,1] <- 0
+									resolved[4,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-									(MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-									MX5[4,2] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+									(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+									resolved[4,2] <- 1
 								}else{
-									MX5[4,2] <- 0
+									resolved[4,2] <- 0
 								}
 							}else{
-								if(((MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-									(MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-									MX5[4,1] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+									(seq.matrix[2,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+									resolved[4,1] <- 1
 								}else{
-									MX5[4,1] <- 0
+									resolved[4,1] <- 0
 								}
-								if(((MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-									(MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-									MX5[4,2] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+									(seq.matrix[1,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+									resolved[4,2] <- 1
 								}else{
-									MX5[4,2] <- 0
+									resolved[4,2] <- 0
 								}
 							}
 							if(i >= ind1 && i>= ind2 && (seq.length-i)>ind1&&
 								(seq.length-i)<ind2){
-								if(MX4[2,i-z+1]>0){
-									if(((MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||
-										(MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=1))&&
-									((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||
-										(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
-										MX5[1,1] <- 1
+								if(phase.shift.matrix[2,i-z+1]>0){
+									if(((seq.matrix[2,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[2,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=1))&&
+									((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=2)||
-										(MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=1))&&
-									((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||
-										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[1,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[2,i-ind1]&&phase.shift.matrix[1,i-ind1]!=1))&&
+									((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
 								}else{
-									if(((MX1[1,i]==MX1[2,i-ind1]&&MX4[1,i-ind1]!=2)||
-										(MX1[1,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))&&
-									((MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=2)||
-										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
-										MX5[1,1] <- 1
+									if(((seq.matrix[1,i]==seq.matrix[2,i-ind1]&&phase.shift.matrix[1,i-ind1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=1))&&
+									((seq.matrix[2,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[2,i]==MX1[2,i-ind1]&&MX4[1,i-ind1+1]!=2)||
-										(MX1[2,i]==MX1[1,i-ind1]&&MX4[1,i-ind1+1]!=1))&&
-									((MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1]!=2)||
-										(MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=1))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[2,i]==seq.matrix[2,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[1,i-ind1]&&phase.shift.matrix[1,i-ind1+1]!=1))&&
+									((seq.matrix[1,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
 								}
-								if(MX4[2,i+z+1]>0){
-									if(((MX1[2,i]==MX1[1,i-ind2]&&MX4[1,i-ind2+1]!=2)||
-										(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=1))&&
-									((MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-										(MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-										MX5[2,1] <- 1
+								if(phase.shift.matrix[2,i+z+1]>0){
+									if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=1))&&
+									((seq.matrix[1,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+										resolved[2,1] <- 1
 									}else{
-										MX5[2,1] <- 0
+										resolved[2,1] <- 0
 									}
-									if(((MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind2+1]!=2)||
-										(MX1[1,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=1))&&
-									((MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-										(MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-										MX5[2,2] <- 1
+									if(((seq.matrix[1,i]==seq.matrix[1,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=1))&&
+									((seq.matrix[2,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+										resolved[2,2] <- 1
 									}else{
-										MX5[2,2] <- 0
+										resolved[2,2] <- 0
 									}
 								}else{
-									if(((MX1[1,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=2)||
-										(MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind2+1]!=1))&&
-									((MX1[2,i]==MX1[1,i+ind2]&&MX4[1,i+ind2]!=2)||
-										(MX1[2,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-										MX5[2,1] <- 1
+									if(((seq.matrix[1,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[1,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=1))&&
+									((seq.matrix[2,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2]!=2)||
+										(seq.matrix[2,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+										resolved[2,1] <- 1
 									}else{
-										MX5[2,1] <- 0
+										resolved[2,1] <- 0
 									}
-									if(((MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind2+1]!=2)||
-										(MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind2]!=1))&&
-									((MX1[1,i]==MX1[1,i+ind2]&&MX4[1,i+ind2+1]!=2)||
-										(MX1[1,i]==MX1[2,i+ind2]&&MX4[1,i+ind2+1]!=1))){
-										MX5[2,2] <- 1
+									if(((seq.matrix[2,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind2+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[1,i-ind2]&&phase.shift.matrix[1,i-ind2]!=1))&&
+									((seq.matrix[1,i]==seq.matrix[1,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[2,i+ind2]&&phase.shift.matrix[1,i+ind2+1]!=1))){
+										resolved[2,2] <- 1
 									}else{
-										MX5[2,2] <- 0
+										resolved[2,2] <- 0
 									}
 								}
 							}else if(i<=ind1){
-									if(((MX1[1,i]==MX1[2,i+ind1]&&MX4[1,i+ind1+1]!=2)||
-										(MX1[1,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
-										MX5[1,1] <- 1
+									if(((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[2,i]==MX1[2,i+ind1]&&MX4[1,i+ind1]!=2)||
-										(MX1[2,i]==MX1[1,i+ind1]&&MX4[1,i+ind1+1]!=1))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&phase.shift.matrix[1,i+ind1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[1,i+ind1]&&phase.shift.matrix[1,i+ind1+1]!=1))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
-									MX5[2,] <- 0
+									resolved[2,] <- 0
 							}else if((seq.length-i)<ind2){
-									MX5[1,] <- 0
-									if(((MX1[2,i]==MX1[1,i-ind2]&&MX4[1,i-ind1]!=2)||
-										(MX1[2,i]==MX1[2,i-ind2]&&MX4[1,i-ind1]!=1))){
-										MX5[2,1] <- 1
+									resolved[1,] <- 0
+									if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&phase.shift.matrix[1,i-ind1]!=2)||
+										(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind1]!=1))){
+										resolved[2,1] <- 1
 									}else{
-										MX5[2,1] <- 0
+										resolved[2,1] <- 0
 									}
-									if(((MX1[1,i]==MX1[1,i-ind2]&&MX4[1,i-ind1]!=2)||
-										(MX1[1,i]==MX1[2,i-ind2]&&MX4[1,i-ind1]!=1))){
-										MX5[2,2] <- 1
+									if(((seq.matrix[1,i]==seq.matrix[1,i-ind2]&&phase.shift.matrix[1,i-ind1]!=2)||
+										(seq.matrix[1,i]==seq.matrix[2,i-ind2]&&phase.shift.matrix[1,i-ind1]!=1))){
+										resolved[2,2] <- 1
 									}else{
-										MX5[2,2] <- 0
+										resolved[2,2] <- 0
 									}
 							}
 						}
 
 						if(ind1==0){
-							MX5[1,] <- 0
+							resolved[1,] <- 0
 						}
 						if(ind2==0){
-							MX5[2,] <- 0
+							resolved[2,] <- 0
 						}
 						if(!is.longindel){
 							if(ind1>ind2){
-								if(MX4[2,i]==ind1){
+								if(phase.shift.matrix[2,i]==ind1){
 									if(z<=ind1){
-										MX5[1,] <- 0
+										resolved[1,] <- 0
 										if(z<=ind2){
-											MX5[3,] <- 0
+											resolved[3,] <- 0
 										}
 									}
 
-									if((MX4[4,i+1]-z)<0){
-										MX5[2,] <- 0
+									if((phase.shift.matrix[4,i+1]-z)<0){
+										resolved[2,] <- 0
 									}
 								}else{
-									MX5[1,] <- 0
-									MX5[3,] <- 0
+									resolved[1,] <- 0
+									resolved[3,] <- 0
 								}
 							}else{ #ind1<ind2
-								if(MX4[2,i+1]==ind1){
-									if(MX4[3,i+1]<=ind2){
-										MX5[2,] <- 0
-										if(ind1 != 0 && z > MX4[4,i+1]){
-											MX5[3,] <- 0
+								if(phase.shift.matrix[2,i+1]==ind1){
+									if(phase.shift.matrix[3,i+1]<=ind2){
+										resolved[2,] <- 0
+										if(ind1 != 0 && z > phase.shift.matrix[4,i+1]){
+											resolved[3,] <- 0
 										}
 									}
 									if(z>ind2){
-										MX5[2,] <- 0
+										resolved[2,] <- 0
 									}
 								}else{
-									if(z+MX4[4,i+1]<=ind2){
-										MX5[2,] <- 0
+									if(z+phase.shift.matrix[4,i+1]<=ind2){
+										resolved[2,] <- 0
 									}
 									if(z>ind1){
-										MX5[4,] <- 0
+										resolved[4,] <- 0
 									}
-									MX5[1,] <- 0
+									resolved[1,] <- 0
 								}
 							}
 						}else{
 							if(ind1>ind2){
-								if(abs(MX4[2,i+1])==ind1){
+								if(abs(phase.shift.matrix[2,i+1])==ind1){
 									if(z<=ind1){
-										MX5[1,] <- 0
+										resolved[1,] <- 0
 									}
-									if((MX4[4,i+1]-z)<0){
-										MX5[c(2,4),] <- 0
+									if((phase.shift.matrix[4,i+1]-z)<0){
+										resolved[c(2,4),] <- 0
 									}
 								}else{
-									MX5[c(1,3),] <- 0
+									resolved[c(1,3),] <- 0
 								}
 							}else{
-								if(MX4[2,i+1] <= ind2){
-									if(MX4[4,i+1]<=ind2){
-										MX5[2,] <- 0
+								if(phase.shift.matrix[2,i+1] <= ind2){
+									if(phase.shift.matrix[4,i+1]<=ind2){
+										resolved[2,] <- 0
 									}
-									if(ind1!=0 &&z > MX4[4,i+1]){
-										MX5[4,] <- 0
+									if(ind1!=0 &&z > phase.shift.matrix[4,i+1]){
+										resolved[4,] <- 0
 									}
 									if(z>ind2){
-										MX5[2,] <- 0
+										resolved[2,] <- 0
 									}
 								}else{
-									if((z+MX4[4,i+1])<=ind2){
-										MX5[2,] <- 0
+									if((z+phase.shift.matrix[4,i+1])<=ind2){
+										resolved[2,] <- 0
 									}
-									MX5[c(1,3),] <- 0
+									resolved[c(1,3),] <- 0
 								}
 							}
 						}
 						if(!is.longindel){
-							if(all(MX5[1,]==1)){
-							}else if(all(MX5[2,]==1)){
-							}else if(all(MX5[c(1,2),1]==1)&&all(MX5[c(1,2),2]==0)){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(all(MX5[c(1,2),1]==0)&&all(MX5[c(1,2),2]==1)){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
-							}else if((MX5[1,1]==1&&MX5[2,2]==1)||(MX5[1,2]==1&&MX5[2,1]==1)){
-							}else if(all(MX5[c(1,3),1]==1)&&all(MX5[c(1,3),2]==0)){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(all(MX5[c(1,3),1]==0)&&all(MX5[c(1,3),2]==1)){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
-							}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))
-								&&z< ind1 &&MX4[4,i+1]>ind1){
-							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
-								&&z<=ind1 &&MX4[4,i+1]>ind2 &&ind2 >ind1){
-							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
-								&&MX4[2,i+1]==ind2&&MX4[1,i+ind2+1]==0){
-							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))
-								&&MX4[2,i+1]==ind1&&MX4[4,i+1]>=z){
-							}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))
-								&&MX4[2,i+1]==ind1&&ind2>ind1&&MX4[4,i+1]>=(z+ind1)){
-							}else if(xor(MX5[1,1]==1,MX5[1,2]==1)){
-								if(MX5[1,1]==1){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
+							if(all(resolved[1,]==1)){
+							}else if(all(resolved[2,]==1)){
+							}else if(all(resolved[c(1,2),1]==1)&&all(resolved[c(1,2),2]==0)){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(all(resolved[c(1,2),1]==0)&&all(resolved[c(1,2),2]==1)){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+							}else if((resolved[1,1]==1&&resolved[2,2]==1)||(resolved[1,2]==1&&resolved[2,1]==1)){
+							}else if(all(resolved[c(1,3),1]==1)&&all(resolved[c(1,3),2]==0)){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(all(resolved[c(1,3),1]==0)&&all(resolved[c(1,3),2]==1)){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+							}else if(((resolved[1,1]==1&&resolved[3,2]==1)||(resolved[1,2]==1&&resolved[3,1]==1))
+								&&z< ind1 &&phase.shift.matrix[4,i+1]>ind1){
+							}else if(((resolved[2,1]==1&&resolved[3,2]==1)||(resolved[2,2]==1&&resolved[3,1]==1))
+								&&z<=ind1 &&phase.shift.matrix[4,i+1]>ind2 &&ind2 >ind1){
+							}else if(((resolved[2,1]==1&&resolved[3,2]==1)||(resolved[2,2]==1&&resolved[3,1]==1))
+								&&phase.shift.matrix[2,i+1]==ind2&&phase.shift.matrix[1,i+ind2+1]==0){
+							}else if(((resolved[2,1]==1&&resolved[3,2]==1)||(resolved[2,2]==1&&resolved[3,1]==1))
+								&&phase.shift.matrix[2,i+1]==ind1&&phase.shift.matrix[4,i+1]>=z){
+							}else if(((resolved[1,1]==1&&resolved[3,2]==1)||(resolved[1,2]==1&&resolved[3,1]==1))
+								&&phase.shift.matrix[2,i+1]==ind1&&ind2>ind1&&phase.shift.matrix[4,i+1]>=(z+ind1)){
+							}else if(xor(resolved[1,1]==1,resolved[1,2]==1)){
+								if(resolved[1,1]==1){
+									phase.shift.matrix[1,i+1] <- 1
+									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
 								}else{
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+									phase.shift.matrix[1,i+1] <- 2
+									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 								}
-							}else if(xor(MX5[2,1]==1,MX5[2,2]==1)){
-								if(MX5[2,1]==1){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
+							}else if(xor(resolved[2,1]==1,resolved[2,2]==1)){
+								if(resolved[2,1]==1){
+									phase.shift.matrix[1,i+1] <- 1
+									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
 								}else{
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+									phase.shift.matrix[1,i+1] <- 2
+									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 								}
-							}else if(all(MX5[3,]==1)&&all(MX5[4,]==0)){
-							}else if(all(MX5[3,]==1)&&all(MX5[4,]==c(1,0))){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(all(MX5[3,]==1)&&all(MX5[4,]==c(0,1))){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
-							}else if(MX5[3,1]==1){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(MX5[3,2]==1){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+							}else if(all(resolved[3,]==1)&&all(resolved[4,]==0)){
+							}else if(all(resolved[3,]==1)&&all(resolved[4,]==c(1,0))){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(all(resolved[3,]==1)&&all(resolved[4,]==c(0,1))){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+							}else if(resolved[3,1]==1){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(resolved[3,2]==1){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 							}
 						}else{
 
-							if(all(MX5[1,]==1)){
-							}else if(all(MX5[2,]==1)){
-							}else if(((MX5[1,1]==1&&MX5[3,2]==1)||(MX5[1,2]==1&&MX5[3,1]==1))){
-							}else if(((MX5[2,1]==1&&MX5[4,2]==1)||(MX5[2,2]==1&&MX5[4,1]==1))){
-							}else if(((MX5[1,1]==1&&MX5[4,2]==1)||(MX5[1,2]==1&&MX5[4,1]==1))){
-							}else if(((MX5[2,1]==1&&MX5[3,2]==1)||(MX5[2,2]==1&&MX5[3,1]==1))){
-							}else if(((MX5[4,1]==1&&MX5[3,2]==1)||(MX5[4,2]==1&&MX5[3,1]==1))){
-							}else if(xor(MX5[1,1]==1,MX5[1,2]==1)){
-								if(MX5[1,1]==1){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
+							if(all(resolved[1,]==1)){
+							}else if(all(resolved[2,]==1)){
+							}else if(((resolved[1,1]==1&&resolved[3,2]==1)||(resolved[1,2]==1&&resolved[3,1]==1))){
+							}else if(((resolved[2,1]==1&&resolved[4,2]==1)||(resolved[2,2]==1&&resolved[4,1]==1))){
+							}else if(((resolved[1,1]==1&&resolved[4,2]==1)||(resolved[1,2]==1&&resolved[4,1]==1))){
+							}else if(((resolved[2,1]==1&&resolved[3,2]==1)||(resolved[2,2]==1&&resolved[3,1]==1))){
+							}else if(((resolved[4,1]==1&&resolved[3,2]==1)||(resolved[4,2]==1&&resolved[3,1]==1))){
+							}else if(xor(resolved[1,1]==1,resolved[1,2]==1)){
+								if(resolved[1,1]==1){
+									phase.shift.matrix[1,i+1] <- 1
+									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
 								}else{
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+									phase.shift.matrix[1,i+1] <- 2
+									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 								}
-							}else if(xor(MX5[2,1]==1,MX5[2,2]==1)){
-								if(MX5[2,1]==1){
-									MX4[1,i+1] <- 1
-									MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
+							}else if(xor(resolved[2,1]==1,resolved[2,2]==1)){
+								if(resolved[2,1]==1){
+									phase.shift.matrix[1,i+1] <- 1
+									scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
 								}else{
-									MX4[1,i+1] <- 2
-									MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-									MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+									phase.shift.matrix[1,i+1] <- 2
+									scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+									scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 								}
-							}else if(all(MX5[3,]==1)){
-							}else if(all(MX5[4,]==1)){
-							}else if(all(MX5[4,]==c(1,0))){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(all(MX5[4,]==c(0,1))){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
-							}else if(all(MX5[3,]==c(1,0))){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind2+1,1] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(all(MX5[3,]==c(0,1))){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind2+1,2] <- max(MX3[i+1,ind2+1,])+1 
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+							}else if(all(resolved[3,]==1)){
+							}else if(all(resolved[4,]==1)){
+							}else if(all(resolved[4,]==c(1,0))){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(all(resolved[4,]==c(0,1))){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
+							}else if(all(resolved[3,]==c(1,0))){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind2+1,1] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(all(resolved[3,]==c(0,1))){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind2+1,2] <- max(scores[i+1,ind2+1,])+1 
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 							}
 						}
 					}else{
-						if(i==1||i==seq.length||MX4[2,i]==MX4[2,i+2]){
+						if(i==1||i==seq.length||phase.shift.matrix[2,i]==phase.shift.matrix[2,i+2]){
 							if(i!=seq.length){
-								ind1 <- abs(MX4[2,i+2])
-								ind2 <- MX4[2,i+2]
+								ind1 <- abs(phase.shift.matrix[2,i+2])
+								ind2 <- phase.shift.matrix[2,i+2]
 							}else{
-								ind1 <- abs(MX4[2,i])
-								ind2 <- MX4[2,i]
+								ind1 <- abs(phase.shift.matrix[2,i])
+								ind2 <- phase.shift.matrix[2,i]
 							}
 							if(i<=ind1){
-								if(((MX1[1,i]==MX1[2,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1] >= MX3[i+ind1+1,ind1+1,2])||
-								(MX1[1,i]==MX1[1,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1] <= MX3[i+ind1+1,ind1+1,2]))){
-									MX5[1,1] <- 1
+								if(((seq.matrix[1,i]==seq.matrix[2,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+								(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+									resolved[1,1] <- 1
 								}else{
-									MX5[1,1] <- 0
+									resolved[1,1] <- 0
 								}
-								if(((MX1[2,i]==MX1[2,i+ind1]&&
-									MX3[i+ind1+1,ind1+1,1] >= MX3[i+ind1+1,ind1+1,2])||
-								(MX1[2,i]==MX1[2,i-ind2]&&
-									MX3[i+ind1+1,ind1+1,1] <= MX3[i+ind1+1,ind1+1,2]))){
-									MX5[1,2] <- 1
+								if(((seq.matrix[2,i]==seq.matrix[2,i+ind1]&&
+									scores[i+ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
+									scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+									resolved[1,2] <- 1
 								}else{
-									MX5[1,2] <- 0
+									resolved[1,2] <- 0
 								}
 							}else if(seq.length - i < ind1){
 								if(ind2 > 0){
-									if(((MX1[2,i] == MX1[1,i - ind1] &&
-										MX3[i - ind1 + 1,ind1+1,1] >= MX3[i - ind1 + 1,ind1+1,2])||
-									(MX1[2,i] == MX1[2,i - ind1] &&
-										MX3[i - ind1 + 1,ind1+1,1] <= MX3[i - ind1 + 1,ind1+1,2]))){
-										MX5[1,1] <- 1
+									if(((seq.matrix[2,i] == seq.matrix[1,i - ind1] &&
+										scores[i - ind1 + 1,ind1+1,1] >= scores[i - ind1 + 1,ind1+1,2])||
+									(seq.matrix[2,i] == seq.matrix[2,i - ind1] &&
+										scores[i - ind1 + 1,ind1+1,1] <= scores[i - ind1 + 1,ind1+1,2]))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[1,i] == MX1[1,i - ind1] &&
-										MX3[i - ind1 + 1,ind1+1,1] >= MX3[i - ind1 + 1,ind1+1,2]) ||
-									(MX1[1,i] == MX1[2,i - ind1] &&
-										MX3[i - ind1 + 1,ind1+1,1] <= MX3[i - ind1 + 1,ind1+1,2]))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[1,i] == seq.matrix[1,i - ind1] &&
+										scores[i - ind1 + 1,ind1+1,1] >= scores[i - ind1 + 1,ind1+1,2]) ||
+									(seq.matrix[1,i] == seq.matrix[2,i - ind1] &&
+										scores[i - ind1 + 1,ind1+1,1] <= scores[i - ind1 + 1,ind1+1,2]))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
 								}else{
-									if(((MX1[1,i] == MX1[2,i-ind1] &&
-										MX4[1,i-ind1+1]!=2)||
-									(MX1[1,i] == MX1[1,i-ind1] &&
-										MX4[1,i-ind1+1]!=1))){
-										MX5[1,1] <- 1
+									if(((seq.matrix[1,i] == seq.matrix[2,i-ind1] &&
+										phase.shift.matrix[1,i-ind1+1]!=2)||
+									(seq.matrix[1,i] == seq.matrix[1,i-ind1] &&
+										phase.shift.matrix[1,i-ind1+1]!=1))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[2,i] == MX1[2,i-ind1] &&
-										MX4[1,i-ind1+1]!=2)||
-									(MX1[2,i] == MX1[1,i-ind1] &&
-										MX4[1,i-ind1+1]!=1))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[2,i] == seq.matrix[2,i-ind1] &&
+										phase.shift.matrix[1,i-ind1+1]!=2)||
+									(seq.matrix[2,i] == seq.matrix[1,i-ind1] &&
+										phase.shift.matrix[1,i-ind1+1]!=1))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
 								}
 							}else{
 								if(ind2 > 0){
-									if(((MX1[2,i] == MX1[1,i-ind1] && 
-										MX3[i-ind1+1,ind1+1,1] >= MX3[i-ind1+1,ind1+1,2])||
-									(MX1[2,i] == MX1[2,i-ind1]&&
-										MX3[i-ind1+1,ind1+1,1]<= MX3[i-ind1+1,ind1+1,2])) &&
-									((MX1[1,i] == MX1[2,i+ind1] &&
-										MX3[i+ind1+1,ind1+1,1]>=MX3[i+ind1+1,ind1+1,2]) ||
-									(MX1[1,i]==MX1[1,i+ind1]&&
-										MX3[i+ind1+1,ind1+1,1] <= MX3[i+ind1+1,ind1+1,2]))){
-										MX5[1,1] <- 1
+									if(((seq.matrix[2,i] == seq.matrix[1,i-ind1] && 
+										scores[i-ind1+1,ind1+1,1] >= scores[i-ind1+1,ind1+1,2])||
+									(seq.matrix[2,i] == seq.matrix[2,i-ind1]&&
+										scores[i-ind1+1,ind1+1,1]<= scores[i-ind1+1,ind1+1,2])) &&
+									((seq.matrix[1,i] == seq.matrix[2,i+ind1] &&
+										scores[i+ind1+1,ind1+1,1]>=scores[i+ind1+1,ind1+1,2]) ||
+									(seq.matrix[1,i]==seq.matrix[1,i+ind1]&&
+										scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[1,i] == MX1[1,i-ind1] && 
-										MX3[i-ind1+1,ind1+1,1] >= MX3[i-ind1+1,ind1+1,2])||
-									(MX1[1,i]==MX1[2,i-ind1] && 
-										MX3[i-ind1+1,ind1+1,1]<=MX3[i-ind1+1,ind1+1,2])) &&
-									((MX1[2,i]==MX1[2,i+ind1] &&
-										MX3[i+ind1+1,ind1+1,1] >= MX3[i+ind1+1,ind1+1,2])||
-									(MX1[2,i]==MX1[1,i+ind1] &&
-										MX3[i+ind1+1,ind1+1,1] <= MX3[i+ind1+1,ind1+1,2]))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[1,i] == seq.matrix[1,i-ind1] && 
+										scores[i-ind1+1,ind1+1,1] >= scores[i-ind1+1,ind1+1,2])||
+									(seq.matrix[1,i]==seq.matrix[2,i-ind1] && 
+										scores[i-ind1+1,ind1+1,1]<=scores[i-ind1+1,ind1+1,2])) &&
+									((seq.matrix[2,i]==seq.matrix[2,i+ind1] &&
+										scores[i+ind1+1,ind1+1,1] >= scores[i+ind1+1,ind1+1,2])||
+									(seq.matrix[2,i]==seq.matrix[1,i+ind1] &&
+										scores[i+ind1+1,ind1+1,1] <= scores[i+ind1+1,ind1+1,2]))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
 								}else{
-									if(((MX1[1,i] == MX1[2,i-ind1] &&MX4[1,i-ind1+1] !=2) || 
-									(MX1[1,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1] !=1)) &&
-									((MX1[2,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1] != 2) || 
-									(MX1[2,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
-										MX5[1,1] <- 1
+									if(((seq.matrix[1,i] == seq.matrix[2,i-ind1] &&phase.shift.matrix[1,i-ind1+1] !=2) || 
+									(seq.matrix[1,i] == seq.matrix[1,i-ind1] && phase.shift.matrix[1,i-ind1+1] !=1)) &&
+									((seq.matrix[2,i] == seq.matrix[1,i+ind1] && phase.shift.matrix[1,i+ind1+1] != 2) || 
+									(seq.matrix[2,i] == seq.matrix[2,i+ind1] && phase.shift.matrix[1,i+ind1+1] !=1))){
+										resolved[1,1] <- 1
 									}else{
-										MX5[1,1] <- 0
+										resolved[1,1] <- 0
 									}
-									if(((MX1[2,i] == MX1[2,i-ind1] && MX4[1,i-ind1+1] !=2) ||
-										(MX1[2,i] == MX1[1,i-ind1] && MX4[1,i-ind1+1]!=1)) &&
-									((MX1[1,i] == MX1[1,i+ind1] && MX4[1,i+ind1+1]!=2)||
-										(MX1[1,i] == MX1[2,i+ind1] && MX4[1,i+ind1+1] !=1))){
-										MX5[1,2] <- 1
+									if(((seq.matrix[2,i] == seq.matrix[2,i-ind1] && phase.shift.matrix[1,i-ind1+1] !=2) ||
+										(seq.matrix[2,i] == seq.matrix[1,i-ind1] && phase.shift.matrix[1,i-ind1+1]!=1)) &&
+									((seq.matrix[1,i] == seq.matrix[1,i+ind1] && phase.shift.matrix[1,i+ind1+1]!=2)||
+										(seq.matrix[1,i] == seq.matrix[2,i+ind1] && phase.shift.matrix[1,i+ind1+1] !=1))){
+										resolved[1,2] <- 1
 									}else{
-										MX5[1,2] <- 0
+										resolved[1,2] <- 0
 									}
 								}
 							}
-							if(MX5[1,1] ==1 &&MX5[1,2] ==0){
-								MX4[1,i+1] <- 1
-								MX3[i+1,ind1+1,1] <- max(MX3[i+1,ind1+1,])+1
-							}else if(MX5[1,1] == 0 && MX5[1,2] ==1){
-								MX4[1,i+1] <- 2
-								MX3[i+1,ind1+1,2] <- max(MX3[i+1,ind1+1,])+1
+							if(resolved[1,1] ==1 &&resolved[1,2] ==0){
+								phase.shift.matrix[1,i+1] <- 1
+								scores[i+1,ind1+1,1] <- max(scores[i+1,ind1+1,])+1
+							}else if(resolved[1,1] == 0 && resolved[1,2] ==1){
+								phase.shift.matrix[1,i+1] <- 2
+								scores[i+1,ind1+1,2] <- max(scores[i+1,ind1+1,])+1
 							}
 						}
 					}
-					if(MX4[1,i+1] != 0){
+					if(phase.shift.matrix[1,i+1] != 0){
 						j <- 1
 					}
 				}
@@ -1477,33 +1400,33 @@ if (seq.length!=0){ #if sequence exists
 
 
 	if(!is.right&&is.align){
-		MX4<- alignLeft(MX4,seq.length,MX1)$matr
-		MX4 <- alignRight(MX4,seq.length,MX1)$matr
+		phase.shift.matrix<- alignLeft(phase.shift.matrix,seq.length,seq.matrix)$matr
+		phase.shift.matrix <- alignRight(phase.shift.matrix,seq.length,seq.matrix)$matr
 	}else if(is.right&&is.align){
-		MX4 <- alignRight(MX4,seq.length,MX1)$matr
-		MX4 <- alignLeft(MX4,seq.length,MX1)$matr
+		phase.shift.matrix <- alignRight(phase.shift.matrix,seq.length,seq.matrix)$matr
+		phase.shift.matrix <- alignLeft(phase.shift.matrix,seq.length,seq.matrix)$matr
 	}
 
 	#resolve 3-fold degenerate bases
 
 	if(bd){
 		for(i in 1:seq.length){
-			if(any(MX1[1,i] == c("B","D","H","V","N"))){
-				if(i>MX4[2,i+1] && i<=seq.length-MX4[2,i+1]){
-					if(MX4[1,i-MX4[2,i+1]+1]>0 && MX4[1,i+MX4[2,i+1]+1]>0){
-						if(any(MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]] ==c("A","c","G","T"))){
-							if(any(MX1[3-MX4[1,i+MX4[2,i+1]+1],i+MX4[2,i+1]]==c("A","C","G","T"))){
-								if(any(MX1[1,i] ==c("B","D","H","V") & 
-									MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]]!=c("A","C","G","T")
-								& MX1[ 3 - MX4[1,i + MX4[2,i+1]+1],i+ MX4[2,i]]!=c("A","C","G","T") &
-								MX1[MX4[1,i - MX4[2,i+1]+1],i - MX4[2,i+1]] !=
-								MX1[ 3 - MX4[1,i + MX4[2,i+1]+1],i + MX4[2,i+1]])){
-									MX1[1,i] <- MX1[3 - MX4[1,i + MX4[2,i+1]+1],i + MX4[2,i+1]]
-									MX1[2,i] <- MX1[MX4[1,i - MX4[2,i+1]+1],i - MX4[2,i+1]]
-								}else if(MX1[1,i]=="N"&&MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]+1]!=
-									MX1[3-MX4[1,i+MX4[2,i+1]+1],i+MX4[2,i+1]]){
-									MX1[1,i] <- MX1[3-MX4[1,i+MX4[2,i+1]+1],i+MX4[2,i+1]]
-									MX1[2,i] <- MX1[MX4[1,i-MX4[2,i+1]+1],i-MX4[2,i+1]]
+			if(any(seq.matrix[1,i] == c("B","D","H","V","N"))){
+				if(i>phase.shift.matrix[2,i+1] && i<=seq.length-phase.shift.matrix[2,i+1]){
+					if(phase.shift.matrix[1,i-phase.shift.matrix[2,i+1]+1]>0 && phase.shift.matrix[1,i+phase.shift.matrix[2,i+1]+1]>0){
+						if(any(seq.matrix[phase.shift.matrix[1,i-phase.shift.matrix[2,i+1]+1],i-phase.shift.matrix[2,i+1]] ==c("A","c","G","T"))){
+							if(any(seq.matrix[3-phase.shift.matrix[1,i+phase.shift.matrix[2,i+1]+1],i+phase.shift.matrix[2,i+1]]==c("A","C","G","T"))){
+								if(any(seq.matrix[1,i] ==c("B","D","H","V") & 
+									seq.matrix[phase.shift.matrix[1,i-phase.shift.matrix[2,i+1]+1],i-phase.shift.matrix[2,i+1]]!=c("A","C","G","T")
+								& seq.matrix[ 3 - phase.shift.matrix[1,i + phase.shift.matrix[2,i+1]+1],i+ phase.shift.matrix[2,i]]!=c("A","C","G","T") &
+								seq.matrix[phase.shift.matrix[1,i - phase.shift.matrix[2,i+1]+1],i - phase.shift.matrix[2,i+1]] !=
+								seq.matrix[ 3 - phase.shift.matrix[1,i + phase.shift.matrix[2,i+1]+1],i + phase.shift.matrix[2,i+1]])){
+									seq.matrix[1,i] <- seq.matrix[3 - phase.shift.matrix[1,i + phase.shift.matrix[2,i+1]+1],i + phase.shift.matrix[2,i+1]]
+									seq.matrix[2,i] <- seq.matrix[phase.shift.matrix[1,i - phase.shift.matrix[2,i+1]+1],i - phase.shift.matrix[2,i+1]]
+								}else if(seq.matrix[1,i]=="N"&&seq.matrix[phase.shift.matrix[1,i-phase.shift.matrix[2,i+1]+1],i-phase.shift.matrix[2,i+1]+1]!=
+									seq.matrix[3-phase.shift.matrix[1,i+phase.shift.matrix[2,i+1]+1],i+phase.shift.matrix[2,i+1]]){
+									seq.matrix[1,i] <- seq.matrix[3-phase.shift.matrix[1,i+phase.shift.matrix[2,i+1]+1],i+phase.shift.matrix[2,i+1]]
+									seq.matrix[2,i] <- seq.matrix[phase.shift.matrix[1,i-phase.shift.matrix[2,i+1]+1],i-phase.shift.matrix[2,i+1]]
 								}
 							}
 						}
@@ -1513,41 +1436,41 @@ if (seq.length!=0){ #if sequence exists
 		}
 	}
 
-	#based on MX4 and MX1 reconstruct two allelic sequences
+	#based on phase.shift.matrix and seq.matrix reconstruct two allelic sequences
 	temp1 <- c()
 	temp2 <- c()
 	temp3 <- c()
 	ambig2 <- 0
 	for(i in 1:seq.length){
-		if(MX4[1,i+1]==1){
-			temp1 <- c(temp1,MX1[1,i])
-			temp2 <- c(temp2,MX1[2,i])
-		}else if(MX4[1,i+1] == 2){
-			temp1 <- c(temp1, MX1[2,i])
-			temp2 <- c(temp2, MX1[1,i])
+		if(phase.shift.matrix[1,i+1]==1){
+			temp1 <- c(temp1,seq.matrix[1,i])
+			temp2 <- c(temp2,seq.matrix[2,i])
+		}else if(phase.shift.matrix[1,i+1] == 2){
+			temp1 <- c(temp1, seq.matrix[2,i])
+			temp2 <- c(temp2, seq.matrix[1,i])
 		}else{
 			ambig2 <- ambig2 +1
-			if(MX1[1,i]=="A" && MX1[2,i]=="G"){
+			if(seq.matrix[1,i]=="A" && seq.matrix[2,i]=="G"){
 				temp1 <- c(temp1,"R")
 				temp2 <- c(temp2,"R")
-			}else if(MX1[1,i]=="C" && MX1[2,i]=="T"){
+			}else if(seq.matrix[1,i]=="C" && seq.matrix[2,i]=="T"){
 				temp1 <- c(temp1,"Y")
 				temp2 <- c(temp2,"Y")
-			}else if(MX1[1,i]=="G" && MX1[2,i]=="C"){
+			}else if(seq.matrix[1,i]=="G" && seq.matrix[2,i]=="C"){
 				temp1 <- c(temp1,"S")
 				temp2 <- c(temp2,"S")
-			}else if(MX1[1,i]=="A" && MX1[2,i]=="T"){
+			}else if(seq.matrix[1,i]=="A" && seq.matrix[2,i]=="T"){
 				temp1 <- c(temp1,"W")
 				temp2 <- c(temp2,"W")
-			}else if(MX1[1,i]=="A" && MX1[2,i]=="C"){
+			}else if(seq.matrix[1,i]=="A" && seq.matrix[2,i]=="C"){
 				temp1 <- c(temp1,"M")
 				temp2 <- c(temp2,"M")
-			}else if(MX1[1,i]=="G" && MX1[2,i]=="T"){
+			}else if(seq.matrix[1,i]=="G" && seq.matrix[2,i]=="T"){
 				temp1 <- c(temp1,"K")
 				temp2 <- c(temp2,"K")
 			}
 		}
-		temp3 <- c(temp3,MX4[2,i+1])
+		temp3 <- c(temp3,phase.shift.matrix[2,i+1])
 	}
 
 
@@ -1558,20 +1481,20 @@ if (seq.length!=0){ #if sequence exists
 	temp4 <- c()
 	x <- c()
 	for(i in 1:seq.length){
-		if(MX4[2,i+1]>SC){
-			dots <- character(MX4[2,i+1]-SC)
+		if(phase.shift.matrix[2,i+1]>SC){
+			dots <- character(phase.shift.matrix[2,i+1]-SC)
 			dots[] <- "."
 			temp3 <- c(temp3,dots)
-			SC <- MX4[2,i+1]
-		}else if(MX4[2,i+1]<SC){
-			dots <- character(SC-MX4[2,i+1])
+			SC <- phase.shift.matrix[2,i+1]
+		}else if(phase.shift.matrix[2,i+1]<SC){
+			dots <- character(SC-phase.shift.matrix[2,i+1])
 			dots[] <- "."
 			temp4 <- c(temp4,dots)
-			SC <- MX4[2,i+1]
+			SC <- phase.shift.matrix[2,i+1]
 		}
 		temp3 <- c(temp3,temp1[i])
 		temp4 <- c(temp4,temp2[i])
-		x <- c(x,abs(MX4[2,i+1]))
+		x <- c(x,abs(phase.shift.matrix[2,i+1]))
 	}
 	if(SC>0){
 		dots <- character(SC)

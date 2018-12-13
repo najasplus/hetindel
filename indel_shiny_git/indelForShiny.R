@@ -1,3 +1,6 @@
+THRESHOLD <- 50
+
+
 countCharOccurrences <- function(char, s) {
     s2 <- gsub(char,"",s)
     return (nchar(s) - nchar(s2))
@@ -572,7 +575,7 @@ mark.longindel <- function(is.longindel,sequences,scores,shifts){
 					}
 				}
 				if(SCa != 0){
-					SCd <- abs(Scd-1)
+					SCd <- abs(SCd-1)
 				}
 				SCa <- shifts[2,i+1]
 			}
@@ -1591,7 +1594,9 @@ reconstruct <- function(seq.matrix, phase.shift.matrix){
 }
 
 calculate.indel <- function(sequence, max.shift=15){
-
+	if(max.shift > THRESHOLD){
+		max.shift = THRESHOLD
+	}
 	temp <- seq.toMatrix(sequence, max.shift)
 	seq.matrix <- temp$matrix
 	is.three.fold <- temp$is.three.fold
