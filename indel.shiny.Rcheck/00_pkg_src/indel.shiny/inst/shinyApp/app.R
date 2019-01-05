@@ -1,0 +1,1 @@
+indel.shiny::launchApp()

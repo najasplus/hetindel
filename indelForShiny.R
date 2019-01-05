@@ -539,6 +539,7 @@ calculate.phase.shift <- function(scores,sequences,max.shift,fixed.shifts,possib
 
 mark.longindel <- function(is.longindel,sequences,scores,shifts){
 	#mark and rotate positions for long indels 
+	seq.length <- length(sequences[1,]
 	if (is.longindel){
 		SCa = shifts[2,2]
 		for(i in 1:seq.length){
@@ -575,7 +576,7 @@ mark.longindel <- function(is.longindel,sequences,scores,shifts){
 					}
 				}
 				if(SCa != 0){
-					SCd <- abs(Scd-1)
+					SCd <- abs(SCd-1)
 				}
 				SCa <- shifts[2,i+1]
 			}
@@ -822,7 +823,7 @@ resolve.all <- function(phase.shift.matrix, seq.matrix, scores, shift.score, max
 								if(((seq.matrix[2,i]==seq.matrix[1,i-ind2]&&
 									scores[i-ind2+1,ind2+1,1]>=scores[i-ind2+1,ind2+1,2])||
 								(seq.matrix[2,i]==seq.matrix[2,i-ind2]&&
-									scores[i-ind2+1,ind2+1,1]<=scores[i.ind2+1,ind2+1,2]))){
+									scores[i-ind2+1,ind2+1,1]<=scores[i-ind2+1,ind2+1,2]))){
 									resolved[2,1] <- 1
 								}else{
 									resolved[2,1] <- 0
@@ -1378,7 +1379,7 @@ align <- function(is.right,is.align,phase.shift.matrix,seq.matrix){
 resolve.three.fold <- function(bd, seq.matrix, phase.shift.matrix){
 
 #resolve 3-fold degenerate bases
-
+	seq.length <- length(seq.matrix[1,])
 	if(bd){
 		for(i in 1:seq.length){
 			if(any(seq.matrix[1,i] == c("B","D","H","V","N"))){

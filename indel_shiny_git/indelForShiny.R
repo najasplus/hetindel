@@ -17,7 +17,6 @@ alignLeft <- function(matrix,seq.length,seq.matrix){
 				matrix[4,i] <- 1
 				if(any(matrix[1,i]==c(0,1))&&any(matrix[1,i+j]==c(0,1))&&
 					seq.matrix[1,i-1]==seq.matrix[2,i+j-1]){
-					##########################################
 					matrix[2,i] <- j
 				}else if(any(matrix[1,i]==c(2,0))&&any(matrix[1,i+j]==c(2,0))&&
 					seq.matrix[2,i-1]==seq.matrix[1,i+j-1]){

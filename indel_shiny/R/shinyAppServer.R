@@ -2,8 +2,19 @@
 #'
 #'
 
+EXAMPLE.DATA.PATH <- "data-raw/example.zip"
+
 shinyAppServer <- function(input, output, session) {
   
+  output$downloadTestdata <- downloadHandler(
+      filename = function(){
+        paste("test_data","zip", sep=".")
+      },
+      content = function(file){
+        file.copy(EXAMPLE.DATA.PATH, file)
+      },
+      contentType = "application/zip"
+    )
   observeEvent(input$submit, {
     # con <- file(paste0(input$prefix_file, ".log"))
     # sink(con, append=TRUE)

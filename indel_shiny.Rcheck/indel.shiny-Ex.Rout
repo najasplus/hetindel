@@ -25,6 +25,24 @@ Type 'q()' to quit R.
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
 > base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
 > cleanEx()
+> nameEx("calculate.indel")
+> ### * calculate.indel
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: calculate.indel
+> ### Title: Calculates Indels for Base strings
+> ### Aliases: calculate.indel
+> ### Keywords: manip
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D calculate.indel("AAAGGGTTTTCCCGCT", 12)
+> ## End(Not run)
+> 
+> 
+> cleanEx()
 > nameEx("indel.shiny-package")
 > ### * indel.shiny-package
 > 
@@ -66,7 +84,7 @@ Type 'q()' to quit R.
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  1.657 0.08 1.742 0 0 
+Time elapsed:  1.696 0.086 1.787 0 0 
 > grDevices::dev.off()
 null device 
           1 

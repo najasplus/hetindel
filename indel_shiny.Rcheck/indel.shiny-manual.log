@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/Arch Linux) (preloaded format=pdflatex 2018.11.7)  13 DEC 2018 15:34
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018/Arch Linux) (preloaded format=pdflatex 2018.11.7)  5 JAN 2019 15:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -402,7 +402,7 @@ File: latin1.def 2018/04/06 v1.3b Input encoding file
 
 
 Writing index file Rd2.idx
-(/tmp/RtmpKAQZnR/Rd2pdf4bb973338e32/Rd2.aux)
+(/tmp/RtmpiGlCSF/Rd2pdf2b371a075eb0/Rd2.aux)
 \openout1 = `Rd2.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 8.
@@ -459,8 +459,8 @@ LaTeX Info: Redefining \ref on input line 8.
 LaTeX Info: Redefining \pageref on input line 8.
 LaTeX Info: Redefining \nameref on input line 8.
 
-(/tmp/RtmpKAQZnR/Rd2pdf4bb973338e32/Rd2.out)
-(/tmp/RtmpKAQZnR/Rd2pdf4bb973338e32/Rd2.out)
+(/tmp/RtmpiGlCSF/Rd2pdf2b371a075eb0/Rd2.out)
+(/tmp/RtmpiGlCSF/Rd2pdf2b371a075eb0/Rd2.out)
 \@outlinefile=\write4
 \openout4 = `Rd2.out'.
 
@@ -484,7 +484,7 @@ LaTeX Font Info:    Try loading font information for T1+phv on input line 27.
 (/usr/share/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
 )
-(/tmp/RtmpKAQZnR/Rd2pdf4bb973338e32/Rd2.toc
+(/tmp/RtmpiGlCSF/Rd2pdf2b371a075eb0/Rd2.toc
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line 1.
 LaTeX Font Info:    External font `cmex10' loaded for size
@@ -501,45 +501,46 @@ Underfull \hbox (badness 10000) in paragraph at lines 39--41
 
  []
 
-LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 9.0pt on input line 53.
 [1
 
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-(/tmp/RtmpKAQZnR/Rd2pdf4bb973338e32/Rd2.ind [2]
+LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
+(Font)              scaled to size 9.0pt on input line 53.
+ [2]
+(/tmp/RtmpiGlCSF/Rd2pdf2b371a075eb0/Rd2.ind [3]
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <12> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 3.
 
 
 LaTeX Font Warning: Font shape `T1/zi4/m/it' undefined
-(Font)              using `T1/zi4/m/n' instead on input line 10.
+(Font)              using `T1/zi4/m/n' instead on input line 18.
 
-[3
+[4
 
 
 ])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 91.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 91.
- (/tmp/RtmpKAQZnR/Rd2pdf4bb973338e32/Rd2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 91.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 91.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 149.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 149.
+ (/tmp/RtmpiGlCSF/Rd2pdf2b371a075eb0/Rd2.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 149.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 149.
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
-(rerunfilecheck)             Checksum: 76ED60E69B0DD22AE6EB725D0985EE72;194.
+(rerunfilecheck)             Checksum: 4312979CBB572014EA09F4ABB868247E;306.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 91.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 149.
  ) 
 Here is how much of TeX's memory you used:
- 6274 strings out of 492642
- 90029 string characters out of 6135566
- 176190 words of memory out of 5000000
- 10052 multiletter control sequences out of 15000+600000
+ 6291 strings out of 492642
+ 90253 string characters out of 6135566
+ 177190 words of memory out of 5000000
+ 10054 multiletter control sequences out of 15000+600000
  40674 words of font info for 49 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 38i,5n,36p,206b,594s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,6n,36p,206b,429s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texmf-dist/fon
 ts/enc/dvips/inconsolata/i4-t1-0.enc}</usr/share/texmf-dist/fonts/type1/public/
 inconsolata/Inconsolata-zi4r.pfb></usr/share/texmf-dist/fonts/type1/public/amsf
@@ -547,10 +548,10 @@ onts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><
 /usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/f
 onts/type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/ut
 mr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (3 pages, 78288 bytes).
+Output written on Rd2.pdf (4 pages, 84428 bytes).
 PDF statistics:
- 90 PDF objects out of 1000 (max. 8388607)
- 77 compressed objects within 1 object stream
- 21 named destinations out of 1000 (max. 500000)
- 25 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 123 PDF objects out of 1000 (max. 8388607)
+ 108 compressed objects within 2 object streams
+ 36 named destinations out of 1000 (max. 500000)
+ 41 words of extra memory for PDF output out of 10000 (max. 10000000)
 

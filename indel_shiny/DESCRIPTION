@@ -1,12 +1,12 @@
 Package: indel.shiny
 Type: Package
 Title: Analyze heterozygous and homozygous indels
-Version: 1.3
-Date: 2018-08-20
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Version: 1.5
+Date: 2019-01-05
+Author: Robert Deibel
+Maintainer: Anastasia Eskova <anastasia.eskova@tuebingen.mpg.de>
 Description: Shiny app for analysis of heterozygous and homozygous indels using .ab1 Sanger sequnce files and reference sequence in fasta format as a .txt file.
-License: MIT License
+License: MIT License + file LICENSE
 Imports: 
 	BiocGenerics,
 	Biostrings,
